@@ -7,6 +7,35 @@
         mc:Ignorable="d"
         Title="Dashboard" Height="768" Width="1024"
         WindowStartupLocation="CenterScreen">
+    <Window.Resources>
+        <Style x:Key="SidebarMenuItem" TargetType="RadioButton">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Height" Value="45"/>
+            <Setter Property="Foreground" Value="#333333"/>
+            <Setter Property="Margin" Value="0,0,0,5"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="RadioButton">
+                        <Border x:Name="border" Background="{TemplateBinding Background}">
+                            <ContentPresenter HorizontalAlignment="Left" VerticalAlignment="Center" Margin="20,0,0,0"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="#E5F1FB"/>
+                            </Trigger>
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="#CCE4F7"/>
+                                <Setter Property="Foreground" Value="#0078D7"/>
+                                <Setter Property="FontWeight" Value="SemiBold"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Window.Resources>
+    
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="40"/>
@@ -56,6 +85,54 @@
                     <!-- Navigation Items Placeholder -->
                     <StackPanel Grid.Row="1" Margin="0,20,0,0">
                         <!-- Menu items would go here depending on the role -->
+                        <RadioButton Style="{StaticResource SidebarMenuItem}" GroupName="Menu" IsChecked="True" x:Name="menuTongQuan" Checked="Menu_Checked" Tag="TongQuan">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE80F;" FontSize="16" Margin="0,0,15,0" VerticalAlignment="Center"/>
+                                <TextBlock Text="Tổng quan" FontSize="14" VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </RadioButton>
+
+                        <RadioButton Style="{StaticResource SidebarMenuItem}" GroupName="Menu" x:Name="menuBanHang" Checked="Menu_Checked" Tag="BanHang">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE7BF;" FontSize="16" Margin="0,0,15,0" VerticalAlignment="Center"/>
+                                <TextBlock Text="Bán hàng (POS)" FontSize="14" VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </RadioButton>
+
+                        <RadioButton Style="{StaticResource SidebarMenuItem}" GroupName="Menu" x:Name="menuTaiKhoan" Checked="Menu_Checked" Tag="TaiKhoan">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE713;" FontSize="16" Margin="0,0,15,0" VerticalAlignment="Center"/>
+                                <TextBlock Text="Tài khoản" FontSize="14" VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </RadioButton>
+                        
+                        <RadioButton Style="{StaticResource SidebarMenuItem}" GroupName="Menu" x:Name="menuKhachHang" Checked="Menu_Checked" Tag="KhachHang">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE716;" FontSize="16" Margin="0,0,15,0" VerticalAlignment="Center"/>
+                                <TextBlock Text="Khách hàng" FontSize="14" VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </RadioButton>
+
+                        <RadioButton Style="{StaticResource SidebarMenuItem}" GroupName="Menu" x:Name="menuHangHoa" Checked="Menu_Checked" Tag="HangHoa">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE7B8;" FontSize="16" Margin="0,0,15,0" VerticalAlignment="Center"/>
+                                <TextBlock Text="Hàng hóa" FontSize="14" VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </RadioButton>
+                        
+                        <RadioButton Style="{StaticResource SidebarMenuItem}" GroupName="Menu" x:Name="menuPhieuNhap" Checked="Menu_Checked" Tag="PhieuNhap">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE896;" FontSize="16" Margin="0,0,15,0" VerticalAlignment="Center"/>
+                                <TextBlock Text="Lập phiếu nhập kho" FontSize="14" VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </RadioButton>
+
+                        <RadioButton Style="{StaticResource SidebarMenuItem}" GroupName="Menu" x:Name="menuLienHe" Checked="Menu_Checked" Tag="LienHe">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE715;" FontSize="16" Margin="0,0,15,0" VerticalAlignment="Center"/>
+                                <TextBlock Text="Liên hệ" FontSize="14" VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </RadioButton>
                     </StackPanel>
 
                     <!-- Logout -->
@@ -70,7 +147,7 @@
 
             <!-- Main Workspace Placeholder -->
             <Border Grid.Column="1" Background="#FAF9F8">
-                <TextBlock Text="Main Dashboard Area" Foreground="#CCCCCC" FontSize="20" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                <ContentControl x:Name="MainContentControl" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
             </Border>
         </Grid>
 
