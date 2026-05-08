@@ -1,0 +1,92 @@
+﻿<Window x:Class="quanlybanhang_nmcnpm.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:quanlybanhang_nmcnpm"
+        mc:Ignorable="d"
+        Title="Hệ thống Quản lý Bán hàng" Height="500" Width="550"
+        WindowStartupLocation="CenterScreen"
+        Background="#F3F3F3">
+
+    <Window.Resources>
+        <Style TargetType="Button" x:Key="RoleButtonStyle">
+            <Setter Property="Background" Value="White"/>
+            <Setter Property="BorderBrush" Value="#CCCCCC"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding" Value="15"/>
+            <Setter Property="Margin" Value="40,5,40,10"/>
+            <Setter Property="HorizontalContentAlignment" Value="Left"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="2">
+                            <ContentPresenter HorizontalAlignment="Left" VerticalAlignment="Center" Margin="{TemplateBinding Padding}"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" Value="#FAFAFA"/>
+                                <Setter Property="BorderBrush" Value="#AAAAAA"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Window.Resources>
+
+    <StackPanel Margin="0,30,0,0">
+        <TextBlock Text="Chọn loại người dùng" FontSize="26" FontWeight="Bold" Foreground="#123E82" HorizontalAlignment="Center" Margin="0,10,0,15"/>
+        <TextBlock Text="Vui lòng đăng nhập để tiếp tục" FontSize="16" Foreground="#666666" HorizontalAlignment="Center" Margin="0,0,0,30"/>
+
+        <!-- Admin -->
+        <Button Style="{StaticResource RoleButtonStyle}" Click="Admin_Click">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="70"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xEA18;" FontSize="28" Foreground="#D62828" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                    <TextBlock Text="Quản trị viên (Admin)" FontWeight="Bold" FontSize="18" Foreground="#111111"/>
+                    <TextBlock Text="Toàn quyền truy cập hệ thống" FontSize="14" Foreground="#777777" Margin="0,5,0,0"/>
+                </StackPanel>
+            </Grid>
+        </Button>
+
+        <!-- Cashier -->
+        <Button Style="{StaticResource RoleButtonStyle}" Click="Cashier_Click">
+             <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="70"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE77B;" FontSize="28" Foreground="#0077B6" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                    <TextBlock Text="Thu ngân (Cashier)" FontWeight="Bold" FontSize="18" Foreground="#111111"/>
+                    <TextBlock Text="Quản lý thanh toán và hóa đơn" FontSize="14" Foreground="#777777" Margin="0,5,0,0"/>
+                </StackPanel>
+            </Grid>
+        </Button>
+
+        <!-- Storekeeper -->
+        <Button Style="{StaticResource RoleButtonStyle}" Click="Storekeeper_Click">
+             <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="70"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE74C;" FontSize="28" Foreground="#2A9D8F" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                    <TextBlock Text="Thủ kho (Storekeeper)" FontWeight="Bold" FontSize="18" Foreground="#111111"/>
+                    <TextBlock Text="Quản lý hàng hóa, nhập xuất kho" FontSize="14" Foreground="#777777" Margin="0,5,0,0"/>
+                </StackPanel>
+            </Grid>
+        </Button>
+
+    </StackPanel>
+</Window>
