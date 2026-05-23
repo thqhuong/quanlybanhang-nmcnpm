@@ -72,12 +72,6 @@ public class ApplicationDbContext : DbContext
             .HasForeignKey(ird => ird.MaHang)
             .OnDelete(DeleteBehavior.Restrict);
 
-        modelBuilder.Entity<InventoryReceipt>()
-            .HasOne(ir => ir.Category)
-            .WithMany(c => c.InventoryReceipts)
-            .HasForeignKey(ir => ir.MaNhaCungCap)
-            .OnDelete(DeleteBehavior.Restrict);
-
         // Set primary keys
         modelBuilder.Entity<User>().HasKey(u => u.MaNhanVien);
         modelBuilder.Entity<Role>().HasKey(r => r.MaVaiTro);
@@ -88,81 +82,5 @@ public class ApplicationDbContext : DbContext
         modelBuilder.Entity<OrderDetail>().HasKey(od => new { od.MaDonHang, od.MaHang });
         modelBuilder.Entity<InventoryReceipt>().HasKey(ir => ir.MaPhieuNhapKho);
         modelBuilder.Entity<InventoryReceiptDetail>().HasKey(ird => new { ird.MaPhieuNhapKho, ird.MaHang });
-
-        modelBuilder.Entity<User>()
-            .Property(u => u.TenDangNhap)
-            .HasMaxLength(50);
-
-        modelBuilder.Entity<User>()
-            .HasIndex(u => u.TenDangNhap)
-            .IsUnique();
-
-        modelBuilder.Entity<Product>()
-            .Property(p => p.MaSanPham)
-            .HasMaxLength(50);
-
-        modelBuilder.Entity<Product>()
-            .HasIndex(p => p.MaSanPham)
-            .IsUnique();
-
-        modelBuilder.Entity<Product>()
-            .Property(p => p.TenHang)
-            .HasMaxLength(200);
-
-        modelBuilder.Entity<Product>()
-            .HasIndex(p => p.TenHang)
-            .IsUnique();
-
-        modelBuilder.Entity<Customer>()
-            .Property(c => c.SoDienThoai)
-            .HasMaxLength(20);
-
-        modelBuilder.Entity<Customer>()
-            .HasIndex(c => c.SoDienThoai)
-            .IsUnique();
-
-        modelBuilder.Entity<Product>()
-            .Property(p => p.GiaBan)
-            .HasPrecision(18, 2);
-
-        modelBuilder.Entity<Order>()
-            .Property(o => o.TamTinh)
-            .HasPrecision(18, 2);
-
-        modelBuilder.Entity<Order>()
-            .Property(o => o.GiamGia)
-            .HasPrecision(18, 2);
-
-        modelBuilder.Entity<Order>()
-            .Property(o => o.VatRate)
-            .HasPrecision(5, 2);
-
-        modelBuilder.Entity<Order>()
-            .Property(o => o.TienVat)
-            .HasPrecision(18, 2);
-
-        modelBuilder.Entity<Order>()
-            .Property(o => o.TongTien)
-            .HasPrecision(18, 2);
-
-        modelBuilder.Entity<OrderDetail>()
-            .Property(od => od.DonGiaBan)
-            .HasPrecision(18, 2);
-
-        modelBuilder.Entity<OrderDetail>()
-            .Property(od => od.ThanhTien)
-            .HasPrecision(18, 2);
-
-        modelBuilder.Entity<InventoryReceipt>()
-            .Property(ir => ir.TongTien)
-            .HasPrecision(18, 2);
-
-        modelBuilder.Entity<InventoryReceiptDetail>()
-            .Property(ird => ird.DonGiaNhap)
-            .HasPrecision(18, 2);
-
-        modelBuilder.Entity<InventoryReceiptDetail>()
-            .Property(ird => ird.ThanhTien)
-            .HasPrecision(18, 2);
     }
 }

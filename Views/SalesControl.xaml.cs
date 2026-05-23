@@ -1,29 +1,12 @@
 using System.Windows.Controls;
-using quanlybanhang_nmcnpm.ViewModels;
 
-namespace quanlybanhang_nmcnpm.Views;
-
-public partial class SalesControl : UserControl
+namespace quanlybanhang_nmcnpm.Views
 {
-    private readonly SalesViewModel _viewModel;
-    private bool _loaded;
-
-    public SalesControl(SalesViewModel viewModel)
+    public partial class SalesControl : UserControl
     {
-        _viewModel = viewModel;
-        InitializeComponent();
-        DataContext = _viewModel;
-        Loaded += SalesControl_Loaded;
-    }
-
-    private void SalesControl_Loaded(object sender, System.Windows.RoutedEventArgs e)
-    {
-        if (_loaded)
+        public SalesControl()
         {
-            return;
+            InitializeComponent();
         }
-
-        _loaded = true;
-        _viewModel.LoadCommand.Execute(null);
     }
 }
