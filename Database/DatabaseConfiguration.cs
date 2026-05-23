@@ -31,5 +31,6 @@ public static class DatabaseConfiguration
         using var scope = serviceProvider.CreateScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
         await dbContext.Database.MigrateAsync();
+        await DatabaseSeeder.SeedAsync(dbContext);
     }
 }
