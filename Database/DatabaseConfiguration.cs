@@ -8,8 +8,14 @@ public static class DatabaseConfiguration
 {
     public static IServiceCollection AddDatabaseServices(this IServiceCollection services)
     {
-        var connectionString = ConfigurationManager.ConnectionStrings["DefaultConnection"]?.ConnectionString 
-            ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found in App.config");
+        var environmentConnectionString = Environment.GetEnvironmentVariable("QLBH_CONNECTION_STRING");
+        var configConnectionString = ConfigurationManager.ConnectionStrings["DefaultConnection"]?.ConnectionString;
+        var connectionString = !string.IsNullOrWhiteSpace(environmentConnectionString)
+            ? environmentConnectionString
+            : !string.IsNullOrWhiteSpace(configConnectionString)
+                ? configConnectionString
+                : throw new InvalidOperationException(
+                    "Connection string not configured. Set QLBH_CONNECTION_STRING or DefaultConnection in App.config.");
 
         services.AddDbContext<ApplicationDbContext>(options =>
             options.UseSqlServer(connectionString));
