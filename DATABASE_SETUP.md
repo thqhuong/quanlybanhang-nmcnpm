@@ -19,6 +19,7 @@ quanlybanhang-nmcnpm/
 ├── Database/                    # Database context and configuration
 │   ├── ApplicationDbContext.cs
 │   └── DatabaseConfiguration.cs
+├── Migrations/                  # EF Core migration files
 ├── Views/                       # UI Views
 └── App.config                   # Connection string configuration
 ```
@@ -36,41 +37,41 @@ quanlybanhang-nmcnpm/
 
 ## Database Configuration
 
-### Connection String
-Edit the `App.config` file and update the connection string:
+### Connection String (Environment Variable)
+Set the `QLBH_CONNECTION_STRING` environment variable. The app reads this value at startup.
 
-```xml
-<add name="DefaultConnection" 
-     connectionString="Server=localhost;Database=QuanLyBanHang;Trusted_Connection=True;Encrypt=False;" 
-     providerName="System.Data.SqlClient" />
+**PowerShell (Windows):**
+```powershell
+$env:QLBH_CONNECTION_STRING="Server=localhost;Database=QuanLyBanHang;Trusted_Connection=True;Encrypt=True;TrustServerCertificate=True;"
 ```
 
-**Parameters:**
-- `Server`: Your SQL Server instance (default: localhost)
-- `Database`: Database name (default: QuanLyBanHang)
-- `Trusted_Connection`: Uses Windows authentication (True/False)
-- `Encrypt`: Enable encryption (True/False)
-
-### For SQL Server Authentication:
-```xml
-<add name="DefaultConnection" 
-     connectionString="Server=your_server;Database=QuanLyBanHang;User Id=sa;Password=your_password;Encrypt=False;" 
-     providerName="System.Data.SqlClient" />
+**Command Prompt (Windows):**
+```cmd
+set QLBH_CONNECTION_STRING=Server=localhost;Database=QuanLyBanHang;Trusted_Connection=True;Encrypt=True;TrustServerCertificate=True;
 ```
+
+**SQL Server authentication example:**
+```powershell
+$env:QLBH_CONNECTION_STRING="Server=your_server;Database=QuanLyBanHang;User Id=sa;******;Encrypt=True;TrustServerCertificate=True;"
+```
+
+`App.config` keeps the `DefaultConnection` entry empty so secrets are not stored in source control. If you prefer to use a local config file, you can set the value there instead of using an environment variable.
+
 
 ## Creating and Updating the Database
 
 ### First Time Setup
-In the Package Manager Console, run the following commands to create the initial migration and update the database:
-1. **Create Migration:**
-   ```powershell
-   Add-Migration InitialCreate
-   ```
-
-2. **Update Database:**
+Migration files are already included in the `Migrations/` folder. Apply them to create the schema:
+1. **Update Database (Package Manager Console):**
    ```powershell
    Update-Database
    ```
+
+2. **Update Database (dotnet-ef):**
+   ```bash
+   dotnet ef database update
+   ```
+
 
 ### Adding Changes to Database Schema
 
@@ -89,6 +90,15 @@ In the Package Manager Console, run the following commands to create the initial
    ```powershell
    Update-Database -Migration [PreviousMigrationName]
    ```
+
+### Seed Data
+Seed data for demo/development is configured in `ApplicationDbContext` and applied through migrations. After running `Update-Database`, the database includes:
+- Roles (Admin, NhanVien)
+- A sample employee user
+- Categories, products, and customers
+- A sample order and inventory receipt with details
+
+If you want to re-seed, drop the database and run `Update-Database` again.
 
 ## Entity Classes
 
