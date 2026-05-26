@@ -5,6 +5,7 @@ namespace quanlybanhang_nmcnpm.Services;
 
 public sealed class OverviewService : IOverviewService
 {
+    private const int LowStockThreshold = 20;
     private readonly ApplicationDbContext _dbContext;
 
     public OverviewService(ApplicationDbContext dbContext)
@@ -12,20 +13,74 @@ public sealed class OverviewService : IOverviewService
         _dbContext = dbContext;
     }
 
-    public async Task<OverviewMetrics> GetMetricsAsync()
+    public async Task<OverviewMetrics> GetMetricsAsync(DateTime? from = null, DateTime? to = null)
     {
-        var today = DateTime.Today;
-        var tomorrow = today.AddDays(1);
-        var monthStart = new DateTime(today.Year, today.Month, 1);
+        var start = (from ?? DateTime.Today).Date;
+        var end = (to ?? DateTime.Today).Date;
+        if (end < start)
+        {
+            (start, end) = (end, start);
+        }
 
-        var todayOrders = _dbContext.Orders
-            .Where(o => o.NgayLap >= today && o.NgayLap < tomorrow);
+        var exclusiveEnd = end.AddDays(1);
+        var orders = _dbContext.Orders
+            .Where(order => order.NgayLap >= start && order.NgayLap < exclusiveEnd);
 
-        var revenue = await todayOrders.SumAsync(o => (decimal?)o.TongTien) ?? 0m;
-        var orderCount = await todayOrders.CountAsync();
-        var lowStock = await _dbContext.Products.CountAsync(p => p.SoLuongTon <= 20);
-        var newCustomers = await _dbContext.Customers.CountAsync(c => c.NgayDangKy >= monthStart);
+        var revenue = await orders.SumAsync(order => (decimal?)order.TongTien) ?? 0m;
+        var orderCount = await orders.CountAsync();
+        var averageOrderValue = orderCount == 0 ? 0m : decimal.Round(revenue / orderCount, 2);
+        var lowStockCount = await _dbContext.Products.CountAsync(product => product.SoLuongTon <= LowStockThreshold);
+        var newCustomers = await _dbContext.Customers.CountAsync(customer =>
+            customer.NgayDangKy >= start && customer.NgayDangKy < exclusiveEnd);
 
-        return new OverviewMetrics(revenue, orderCount, lowStock, newCustomers);
+        var salesLines = await _dbContext.OrderDetails
+            .AsNoTracking()
+            .Include(detail => detail.Order)
+            .Include(detail => detail.Product)
+            .Where(detail => detail.Order != null &&
+                detail.Order.NgayLap >= start &&
+                detail.Order.NgayLap < exclusiveEnd)
+            .ToListAsync();
+
+        var topProducts = salesLines
+            .Where(detail => detail.Product != null)
+            .GroupBy(detail => new
+            {
+                detail.MaHang,
+                detail.Product!.MaSanPham,
+                detail.Product.TenHang
+            })
+            .Select(group => new TopProductReportItem(
+                group.Key.MaSanPham,
+                group.Key.TenHang,
+                group.Sum(detail => detail.SoLuong),
+                group.Sum(detail => detail.ThanhTien)))
+            .OrderByDescending(item => item.QuantitySold)
+            .ThenBy(item => item.ProductCode)
+            .Take(5)
+            .ToList();
+
+        var lowStockItems = await _dbContext.Products
+            .Where(product => product.SoLuongTon <= LowStockThreshold)
+            .OrderBy(product => product.SoLuongTon)
+            .ThenBy(product => product.MaSanPham)
+            .Select(product => new LowStockReportItem(
+                product.MaSanPham,
+                product.TenHang,
+                product.SoLuongTon,
+                product.DonViTinh))
+            .Take(10)
+            .ToListAsync();
+
+        return new OverviewMetrics(
+            start,
+            end,
+            revenue,
+            orderCount,
+            averageOrderValue,
+            lowStockCount,
+            newCustomers,
+            topProducts,
+            lowStockItems);
     }
 }

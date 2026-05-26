@@ -16,10 +16,10 @@ public sealed class ProductService : IProductService
     public async Task<IReadOnlyList<ProductListItem>> GetAllAsync()
     {
         var products = await ProductQuery()
-            .OrderBy(p => p.MaSanPham)
+            .OrderBy(product => product.MaSanPham)
             .ToListAsync();
 
-        return products.Select(p => p.ToListItem()).ToList();
+        return products.Select(product => product.ToListItem()).ToList();
     }
 
     public async Task<IReadOnlyList<ProductListItem>> SearchAsync(string? searchText, int? categoryId = null)
@@ -29,28 +29,28 @@ public sealed class ProductService : IProductService
 
         if (!string.IsNullOrWhiteSpace(normalized))
         {
-            query = query.Where(p =>
-                p.MaSanPham.ToLower().Contains(normalized) ||
-                p.TenHang.ToLower().Contains(normalized));
+            query = query.Where(product =>
+                product.MaSanPham.ToLower().Contains(normalized) ||
+                product.TenHang.ToLower().Contains(normalized));
         }
 
         if (categoryId.GetValueOrDefault() > 0)
         {
-            query = query.Where(p => p.MaNhaCungCap == categoryId);
+            query = query.Where(product => product.MaNhaCungCap == categoryId);
         }
 
         var products = await query
-            .OrderBy(p => p.MaSanPham)
+            .OrderBy(product => product.MaSanPham)
             .ToListAsync();
 
-        return products.Select(p => p.ToListItem()).ToList();
+        return products.Select(product => product.ToListItem()).ToList();
     }
 
     public async Task<IReadOnlyList<CategoryOption>> GetCategoriesAsync()
     {
         return await _dbContext.Categories
-            .OrderBy(c => c.TenNCC)
-            .Select(c => new CategoryOption(c.MaNhaCungCap, c.TenNCC))
+            .OrderBy(category => category.TenNCC)
+            .Select(category => new CategoryOption(category.MaNhaCungCap, category.TenNCC))
             .ToListAsync();
     }
 
@@ -112,7 +112,7 @@ public sealed class ProductService : IProductService
 
     private IQueryable<Product> ProductQuery()
     {
-        return _dbContext.Products.Include(p => p.Category);
+        return _dbContext.Products.Include(product => product.Category);
     }
 
     private async Task<ValidationResult> ValidateAsync(ProductInput input, int? existingId = null)
@@ -142,24 +142,24 @@ public sealed class ProductService : IProductService
             return ValidationResult.Failure("Tồn kho không được âm.");
         }
 
-        if (!await _dbContext.Categories.AnyAsync(c => c.MaNhaCungCap == input.CategoryId))
+        if (!await _dbContext.Categories.AnyAsync(category => category.MaNhaCungCap == input.CategoryId))
         {
             return ValidationResult.Failure("Nhóm hàng không hợp lệ.");
         }
 
         var normalizedCode = input.Code.Trim().ToUpperInvariant();
         var normalizedName = input.Name.Trim().ToLowerInvariant();
-        var duplicateCode = await _dbContext.Products.AnyAsync(p =>
-            p.MaSanPham.ToUpper() == normalizedCode &&
-            (!existingId.HasValue || p.MaHang != existingId.Value));
+        var duplicateCode = await _dbContext.Products.AnyAsync(product =>
+            product.MaSanPham.ToUpper() == normalizedCode &&
+            (!existingId.HasValue || product.MaHang != existingId.Value));
         if (duplicateCode)
         {
             return ValidationResult.Failure("Mã sản phẩm đã tồn tại.");
         }
 
-        var duplicateName = await _dbContext.Products.AnyAsync(p =>
-            p.TenHang.ToLower() == normalizedName &&
-            (!existingId.HasValue || p.MaHang != existingId.Value));
+        var duplicateName = await _dbContext.Products.AnyAsync(product =>
+            product.TenHang.ToLower() == normalizedName &&
+            (!existingId.HasValue || product.MaHang != existingId.Value));
         if (duplicateName)
         {
             return ValidationResult.Failure("Tên sản phẩm đã tồn tại.");

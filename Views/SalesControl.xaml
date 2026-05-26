@@ -16,7 +16,8 @@
                 <TextBlock Text="BÁN HÀNG TẠI QUẦY" FontSize="16" FontWeight="Bold" Foreground="#004C99" VerticalAlignment="Center"/>
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
                     <Button Content="&#xE8A5; Đơn mới" Command="{Binding NewOrderCommand}" FontFamily="Segoe UI, Segoe MDL2 Assets" Background="#E0E0E0" BorderThickness="0" Padding="10,5" Height="30" Margin="0,0,8,0"/>
-                    <Button Content="&#xE749; In lại HĐ" FontFamily="Segoe UI, Segoe MDL2 Assets" Background="#E0E0E0" BorderThickness="0" Padding="10,5" Height="30"/>
+                    <Button Content="&#xE8A5; Xuất hóa đơn" Command="{Binding ExportReceiptCommand}" FontFamily="Segoe UI, Segoe MDL2 Assets" Background="#E0E0E0" BorderThickness="0" Padding="10,5" Height="30" Margin="0,0,8,0"/>
+                    <Button Content="&#xE749; In hóa đơn" Command="{Binding PrintReceiptCommand}" FontFamily="Segoe UI, Segoe MDL2 Assets" Background="#E0E0E0" BorderThickness="0" Padding="10,5" Height="30"/>
                 </StackPanel>
             </Grid>
         </Border>
@@ -44,7 +45,7 @@
                             </Grid.ColumnDefinitions>
 
                             <StackPanel Grid.Column="0" Margin="0,0,10,0">
-                                <TextBlock Text="Mã sản phẩm" FontSize="12" Foreground="#666666" Margin="0,0,0,5"/>
+                                <TextBlock Text="Mã hoặc tên sản phẩm" FontSize="12" Foreground="#666666" Margin="0,0,0,5"/>
                                 <TextBox Text="{Binding ProductCode, UpdateSourceTrigger=PropertyChanged}" Height="35" VerticalContentAlignment="Center" BorderBrush="#0078D7" BorderThickness="2" Padding="10,0"/>
                             </StackPanel>
 
@@ -131,9 +132,14 @@
                             </Grid>
 
                             <TextBlock Text="Khách thanh toán" FontSize="12" Foreground="#666666" Margin="0,0,0,5"/>
-                            <TextBox Text="{Binding PaymentText, UpdateSourceTrigger=PropertyChanged}" Height="40" FontSize="16" Foreground="#2E7D32" TextAlignment="Right" VerticalContentAlignment="Center" BorderBrush="#CCCCCC" Margin="0,0,0,12"/>
-                            <TextBlock Text="{Binding StatusMessage}" Foreground="#666666" Margin="0,0,0,12"/>
+                            <TextBox Text="{Binding PaymentText, UpdateSourceTrigger=PropertyChanged}" Height="40" FontSize="16" Foreground="#2E7D32" TextAlignment="Right" VerticalContentAlignment="Center" BorderBrush="#CCCCCC" Margin="0,0,0,10"/>
 
+                            <Grid Margin="0,0,0,12">
+                                <TextBlock Text="Tiền thối:" Foreground="#666666"/>
+                                <TextBlock Text="{Binding Change, StringFormat={}{0:N0} đ}" FontWeight="Bold" HorizontalAlignment="Right"/>
+                            </Grid>
+
+                            <TextBlock Text="{Binding StatusMessage}" Foreground="#666666" Margin="0,0,0,12" TextWrapping="Wrap"/>
                             <Button Command="{Binding CheckoutCommand}" Background="#2E7D32" Foreground="White" Height="45" BorderThickness="0" Content="THANH TOÁN (F9)" FontWeight="Bold" FontSize="16"/>
                         </StackPanel>
                     </Border>

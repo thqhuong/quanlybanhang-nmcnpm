@@ -60,6 +60,7 @@ public sealed record CreateOrderInput(
     int EmployeeId,
     decimal Discount,
     decimal VatRate,
+    decimal PaidAmount,
     IReadOnlyCollection<OrderLineInput> Lines);
 
 public sealed record OrderSummary(
@@ -67,7 +68,30 @@ public sealed record OrderSummary(
     decimal Subtotal,
     decimal Discount,
     decimal Vat,
-    decimal Total);
+    decimal Total,
+    decimal PaidAmount,
+    decimal Change);
+
+public sealed record OrderReceipt(
+    int OrderId,
+    DateTime CreatedAt,
+    string CashierName,
+    string CustomerName,
+    decimal Subtotal,
+    decimal Discount,
+    decimal Vat,
+    decimal Total,
+    decimal PaidAmount,
+    decimal Change,
+    IReadOnlyList<OrderReceiptLine> Lines);
+
+public sealed record OrderReceiptLine(
+    string ProductCode,
+    string ProductName,
+    string Unit,
+    int Quantity,
+    decimal UnitPrice,
+    decimal LineTotal);
 
 public sealed record InventoryReceiptLineInput(int ProductId, int Quantity, decimal UnitCost);
 
@@ -94,13 +118,33 @@ public sealed record AccountListItem(
     string Email,
     string Role,
     bool IsActive,
-    DateTime? LastLoginAt);
+    DateTime? LastLoginAt)
+{
+    public string ActiveStatus => IsActive ? "Hoạt động" : "Đã khóa";
+}
 
 public sealed record OverviewMetrics(
-    decimal TodayRevenue,
-    int TodayOrders,
+    DateTime From,
+    DateTime To,
+    decimal Revenue,
+    int OrderCount,
+    decimal AverageOrderValue,
     int LowStockProducts,
-    int NewCustomersThisMonth);
+    int NewCustomers,
+    IReadOnlyList<TopProductReportItem> TopProducts,
+    IReadOnlyList<LowStockReportItem> LowStockItems);
+
+public sealed record TopProductReportItem(
+    string ProductCode,
+    string ProductName,
+    int QuantitySold,
+    decimal Revenue);
+
+public sealed record LowStockReportItem(
+    string ProductCode,
+    string ProductName,
+    int Stock,
+    string Unit);
 
 public static class ServiceModelMapping
 {

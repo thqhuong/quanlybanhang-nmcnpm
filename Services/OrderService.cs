@@ -21,16 +21,20 @@ public sealed class OrderService : IOrderService
             return ValidationResult<OrderSummary>.Failure(validation.ErrorMessage!);
         }
 
-        var productIds = input.Lines.Select(l => l.ProductId).Distinct().ToList();
+        var productIds = input.Lines.Select(line => line.ProductId).Distinct().ToList();
         var products = await _dbContext.Products
-            .Where(p => productIds.Contains(p.MaHang))
-            .ToDictionaryAsync(p => p.MaHang);
+            .Where(product => productIds.Contains(product.MaHang))
+            .ToDictionaryAsync(product => product.MaHang);
 
         var subtotal = input.Lines.Sum(line => products[line.ProductId].GiaBan * line.Quantity);
         var discount = Math.Min(input.Discount, subtotal);
         var taxable = subtotal - discount;
         var vat = decimal.Round(taxable * (input.VatRate / 100m), 2);
         var total = taxable + vat;
+        if (input.PaidAmount < total)
+        {
+            return ValidationResult<OrderSummary>.Failure("Số tiền khách thanh toán chưa đủ.");
+        }
 
         var order = new Order
         {
@@ -65,17 +69,60 @@ public sealed class OrderService : IOrderService
             subtotal,
             discount,
             vat,
-            total));
+            total,
+            input.PaidAmount,
+            input.PaidAmount - total));
+    }
+
+    public async Task<OrderReceipt?> GetReceiptAsync(int orderId, decimal? paidAmount = null)
+    {
+        var order = await _dbContext.Orders
+            .Include(o => o.Customer)
+            .Include(o => o.OrderDetails)
+            .ThenInclude(od => od.Product)
+            .FirstOrDefaultAsync(o => o.MaDonHang == orderId);
+        if (order is null)
+        {
+            return null;
+        }
+
+        var cashierName = await _dbContext.Users
+            .Where(user => user.MaNhanVien == order.MaNhanVien)
+            .Select(user => user.TenNV)
+            .FirstOrDefaultAsync() ?? "Thu ngân";
+
+        var paid = paidAmount ?? order.TongTien;
+        return new OrderReceipt(
+            order.MaDonHang,
+            order.NgayLap,
+            cashierName,
+            order.Customer?.TenKH ?? "Khách lẻ",
+            order.TamTinh,
+            order.GiamGia,
+            order.TienVat,
+            order.TongTien,
+            paid,
+            Math.Max(0m, paid - order.TongTien),
+            order.OrderDetails
+                .OrderBy(od => od.Product?.MaSanPham)
+                .Select(od => new OrderReceiptLine(
+                    od.Product?.MaSanPham ?? "",
+                    od.Product?.TenHang ?? "",
+                    od.Product?.DonViTinh ?? "",
+                    od.SoLuong,
+                    od.DonGiaBan,
+                    od.ThanhTien))
+                .ToList());
     }
 
     private async Task<ValidationResult> ValidateAsync(CreateOrderInput input)
     {
-        if (!await _dbContext.Customers.AnyAsync(c => c.MaKH == input.CustomerId))
+        if (!await _dbContext.Customers.AnyAsync(customer => customer.MaKH == input.CustomerId))
         {
             return ValidationResult.Failure("Khách hàng không hợp lệ.");
         }
 
-        if (!await _dbContext.Users.AnyAsync(u => u.MaNhanVien == input.EmployeeId && u.IsActive))
+        if (!await _dbContext.Users.AnyAsync(user => user.MaNhanVien == input.EmployeeId && user.IsActive))
         {
             return ValidationResult.Failure("Nhân viên không hợp lệ.");
         }
@@ -90,14 +137,19 @@ public sealed class OrderService : IOrderService
             return ValidationResult.Failure("VAT không được âm.");
         }
 
+        if (input.PaidAmount < 0)
+        {
+            return ValidationResult.Failure("Số tiền khách thanh toán không được âm.");
+        }
+
         if (input.Lines.Count == 0)
         {
             return ValidationResult.Failure("Đơn hàng cần ít nhất một sản phẩm.");
         }
 
         var duplicateProduct = input.Lines
-            .GroupBy(l => l.ProductId)
-            .Any(g => g.Count() > 1);
+            .GroupBy(line => line.ProductId)
+            .Any(group => group.Count() > 1);
         if (duplicateProduct)
         {
             return ValidationResult.Failure("Mỗi sản phẩm chỉ nên xuất hiện một lần trong đơn hàng.");

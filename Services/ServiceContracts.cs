@@ -22,6 +22,7 @@ public interface ICustomerService
 public interface IOrderService
 {
     Task<ValidationResult<OrderSummary>> CreateOrderAsync(CreateOrderInput input);
+    Task<OrderReceipt?> GetReceiptAsync(int orderId, decimal? paidAmount = null);
 }
 
 public interface IInventoryService
@@ -41,5 +42,11 @@ public interface IAccountService
 
 public interface IOverviewService
 {
-    Task<OverviewMetrics> GetMetricsAsync();
+    Task<OverviewMetrics> GetMetricsAsync(DateTime? from = null, DateTime? to = null);
+}
+
+public interface IReceiptService
+{
+    Task<string> ExportAsync(OrderReceipt receipt);
+    void Print(OrderReceipt receipt);
 }

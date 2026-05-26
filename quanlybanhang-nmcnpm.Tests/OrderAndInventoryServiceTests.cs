@@ -7,7 +7,7 @@ namespace quanlybanhang_nmcnpm.Tests;
 public sealed class OrderAndInventoryServiceTests
 {
     [Fact]
-    public async Task CreateOrderAsync_ComputesTotalsAndReducesStock()
+    public async Task CreateOrderAsync_ComputesTotalsReducesStockAndBuildsReceipt()
     {
         await using var dbContext = await ServiceTestFixture.CreateSeededDbContextAsync();
         var service = new OrderService(dbContext);
@@ -21,19 +21,27 @@ public sealed class OrderAndInventoryServiceTests
             .FirstAsync();
         var product = await dbContext.Products.FirstAsync(p => p.MaSanPham == "SP001");
         var originalStock = product.SoLuongTon;
+        var expectedTotal = (product.GiaBan * 2) - 10000m + (((product.GiaBan * 2) - 10000m) * 0.08m);
 
         var result = await service.CreateOrderAsync(new CreateOrderInput(
             customerId,
             employeeId,
             10000m,
             8m,
+            expectedTotal + 50000m,
             new[] { new OrderLineInput(product.MaHang, 2) }));
 
         Assert.True(result.IsValid, result.ErrorMessage);
-        Assert.Equal((product.GiaBan * 2) - 10000m + (((product.GiaBan * 2) - 10000m) * 0.08m), result.Value!.Total);
+        Assert.Equal(expectedTotal, result.Value!.Total);
+        Assert.Equal(50000m, result.Value.Change);
 
         var updatedProduct = await dbContext.Products.FirstAsync(p => p.MaHang == product.MaHang);
         Assert.Equal(originalStock - 2, updatedProduct.SoLuongTon);
+
+        var receipt = await service.GetReceiptAsync(result.Value.OrderId, result.Value.PaidAmount);
+        Assert.NotNull(receipt);
+        Assert.Equal(result.Value.OrderId, receipt!.OrderId);
+        Assert.Single(receipt.Lines);
     }
 
     [Fact]
