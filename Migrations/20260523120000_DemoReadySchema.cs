@@ -100,6 +100,13 @@ namespace quanlybanhang_nmcnpm.Migrations
 
             migrationBuilder.Sql("UPDATE Users SET TenDangNhap = CONCAT('user', MaNhanVien) WHERE TenDangNhap = ''");
 
+            migrationBuilder.AddColumn<string>(
+                name: "PasswordHash",
+                table: "Users",
+                type: "nvarchar(max)",
+                nullable: false,
+                defaultValue: "");
+
             migrationBuilder.AddColumn<bool>(
                 name: "IsActive",
                 table: "Users",
@@ -294,6 +301,10 @@ namespace quanlybanhang_nmcnpm.Migrations
             migrationBuilder.DropColumn(
                 name: "DiemTichLuy",
                 table: "Customers");
+
+            migrationBuilder.DropColumn(
+                name: "PasswordHash",
+                table: "Users");
 
             migrationBuilder.DropColumn(
                 name: "TenDangNhap",

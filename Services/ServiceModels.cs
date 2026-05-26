@@ -84,7 +84,8 @@ public sealed record AccountInput(
     string Phone,
     string Email,
     int RoleId,
-    bool IsActive);
+    bool IsActive,
+    string Password);
 
 public sealed record AccountListItem(
     int Id,
@@ -95,6 +96,15 @@ public sealed record AccountListItem(
     string Role,
     bool IsActive,
     DateTime? LastLoginAt);
+
+public sealed record LoginInput(string Username, string Password);
+
+public sealed record UserSession(
+    int Id,
+    string Username,
+    string FullName,
+    string Role,
+    int RoleId);
 
 public sealed record OverviewMetrics(
     decimal TodayRevenue,

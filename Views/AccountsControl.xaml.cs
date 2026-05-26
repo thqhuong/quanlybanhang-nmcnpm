@@ -26,4 +26,12 @@ public partial class AccountsControl : UserControl
         _loaded = true;
         _viewModel.LoadCommand.Execute(null);
     }
+
+    private void PasswordBox_PasswordChanged(object sender, System.Windows.RoutedEventArgs e)
+    {
+        if (sender is PasswordBox passwordBox)
+        {
+            _viewModel.Password = passwordBox.Password;
+        }
+    }
 }

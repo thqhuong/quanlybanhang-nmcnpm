@@ -1,10 +1,14 @@
 using System.Windows;
+using Microsoft.Extensions.DependencyInjection;
+using quanlybanhang_nmcnpm.Services;
 
 namespace quanlybanhang_nmcnpm;
 
 public partial class MainWindow : Window
 {
     private readonly IServiceProvider _serviceProvider;
+    private readonly IAccountService _accountService;
+    private readonly IUserSessionService _sessionService;
 
     public MainWindow() : this(App.Services)
     {
@@ -13,27 +17,25 @@ public partial class MainWindow : Window
     public MainWindow(IServiceProvider serviceProvider)
     {
         _serviceProvider = serviceProvider;
+        _accountService = serviceProvider.GetRequiredService<IAccountService>();
+        _sessionService = serviceProvider.GetRequiredService<IUserSessionService>();
         InitializeComponent();
     }
 
-    private void Admin_Click(object sender, RoutedEventArgs e)
+    private async void Login_Click(object sender, RoutedEventArgs e)
     {
-        OpenDashboard("Quản trị viên");
-    }
+        StatusText.Text = string.Empty;
+        var username = UsernameBox.Text?.Trim() ?? string.Empty;
+        var password = PasswordBox.Password ?? string.Empty;
+        var result = await _accountService.AuthenticateAsync(new LoginInput(username, password));
+        if (!result.IsValid || result.Value is null)
+        {
+            StatusText.Text = result.ErrorMessage ?? "Đăng nhập thất bại.";
+            return;
+        }
 
-    private void Cashier_Click(object sender, RoutedEventArgs e)
-    {
-        OpenDashboard("Thu ngân");
-    }
-
-    private void Storekeeper_Click(object sender, RoutedEventArgs e)
-    {
-        OpenDashboard("Thủ kho");
-    }
-
-    private void OpenDashboard(string roleName)
-    {
-        var dashboard = new DashboardWindow(roleName, _serviceProvider);
+        _sessionService.Start(result.Value);
+        var dashboard = new DashboardWindow(_serviceProvider);
         dashboard.Show();
         Close();
     }

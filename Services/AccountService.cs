@@ -42,6 +42,7 @@ public sealed class AccountService : IAccountService
         var user = new User();
         ApplyInput(user, input);
         user.NgayDangKy = DateTime.Today;
+        user.PasswordHash = PasswordHasher.HashPassword(input.Password);
         _dbContext.Users.Add(user);
         await _dbContext.SaveChangesAsync();
         await _dbContext.Entry(user).Reference(u => u.Role).LoadAsync();
@@ -66,6 +67,10 @@ public sealed class AccountService : IAccountService
         }
 
         ApplyInput(user, input);
+        if (!string.IsNullOrWhiteSpace(input.Password))
+        {
+            user.PasswordHash = PasswordHasher.HashPassword(input.Password);
+        }
         await _dbContext.SaveChangesAsync();
         await _dbContext.Entry(user).Reference(u => u.Role).LoadAsync();
         return ValidationResult<AccountListItem>.Success(user.ToListItem());
@@ -84,11 +89,49 @@ public sealed class AccountService : IAccountService
         return ValidationResult.Success();
     }
 
+    public async Task<ValidationResult<UserSession>> AuthenticateAsync(LoginInput input)
+    {
+        if (string.IsNullOrWhiteSpace(input.Username) || string.IsNullOrWhiteSpace(input.Password))
+        {
+            return ValidationResult<UserSession>.Failure("Vui lòng nhập tên đăng nhập và mật khẩu.");
+        }
+
+        var username = input.Username.Trim().ToLowerInvariant();
+        var user = await _dbContext.Users
+            .Include(u => u.Role)
+            .FirstOrDefaultAsync(u => u.TenDangNhap.ToLower() == username);
+
+        if (user is null || !PasswordHasher.VerifyPassword(input.Password, user.PasswordHash))
+        {
+            return ValidationResult<UserSession>.Failure("Sai tên đăng nhập hoặc mật khẩu.");
+        }
+
+        if (!user.IsActive)
+        {
+            return ValidationResult<UserSession>.Failure("Tài khoản đã bị khóa.");
+        }
+
+        user.LastLoginAt = DateTime.Now;
+        await _dbContext.SaveChangesAsync();
+
+        return ValidationResult<UserSession>.Success(new UserSession(
+            user.MaNhanVien,
+            user.TenDangNhap,
+            user.TenNV,
+            user.Role?.TenVaiTro ?? string.Empty,
+            user.MaVaiTro));
+    }
+
     private async Task<ValidationResult> ValidateAsync(AccountInput input, int? existingId = null)
     {
         if (string.IsNullOrWhiteSpace(input.Username))
         {
             return ValidationResult.Failure("Tên đăng nhập là bắt buộc.");
+        }
+
+        if (existingId is null && string.IsNullOrWhiteSpace(input.Password))
+        {
+            return ValidationResult.Failure("Mật khẩu là bắt buộc.");
         }
 
         if (string.IsNullOrWhiteSpace(input.FullName))
