@@ -7,14 +7,18 @@ namespace quanlybanhang_nmcnpm.Services;
 public sealed class AccountService : IAccountService
 {
     private readonly ApplicationDbContext _dbContext;
+    private readonly IUserSessionService? _sessionService;
 
-    public AccountService(ApplicationDbContext dbContext)
+    public AccountService(ApplicationDbContext dbContext, IUserSessionService? sessionService = null)
     {
         _dbContext = dbContext;
+        _sessionService = sessionService;
     }
 
     public async Task<IReadOnlyList<AccountListItem>> GetAllAsync()
     {
+        EnsureAdmin();
+
         var users = await _dbContext.Users
             .Include(user => user.Role)
             .OrderBy(user => user.TenDangNhap)
@@ -25,6 +29,8 @@ public sealed class AccountService : IAccountService
 
     public async Task<IReadOnlyList<CategoryOption>> GetRolesAsync()
     {
+        EnsureAdmin();
+
         return await _dbContext.Roles
             .OrderBy(role => role.TenVaiTro)
             .Select(role => new CategoryOption(role.MaVaiTro, role.TenVaiTro))
@@ -33,6 +39,11 @@ public sealed class AccountService : IAccountService
 
     public async Task<ValidationResult<AccountListItem>> CreateAsync(AccountInput input)
     {
+        if (!IsAdmin())
+        {
+            return ValidationResult<AccountListItem>.Failure("Bạn không có quyền quản lý tài khoản.");
+        }
+
         var validation = await ValidateAsync(input);
         if (!validation.IsValid)
         {
@@ -50,6 +61,11 @@ public sealed class AccountService : IAccountService
 
     public async Task<ValidationResult<AccountListItem>> UpdateAsync(int id, AccountInput input)
     {
+        if (!IsAdmin())
+        {
+            return ValidationResult<AccountListItem>.Failure("Bạn không có quyền quản lý tài khoản.");
+        }
+
         var user = await _dbContext.Users
             .Include(u => u.Role)
             .FirstOrDefaultAsync(u => u.MaNhanVien == id);
@@ -76,6 +92,11 @@ public sealed class AccountService : IAccountService
 
     public async Task<ValidationResult> SetActiveAsync(int id, bool isActive)
     {
+        if (!IsAdmin())
+        {
+            return ValidationResult.Failure("Bạn không có quyền quản lý tài khoản.");
+        }
+
         var user = await _dbContext.Users.FirstOrDefaultAsync(u => u.MaNhanVien == id);
         if (user is null)
         {
@@ -176,5 +197,18 @@ public sealed class AccountService : IAccountService
         user.Email = input.Email.Trim();
         user.MaVaiTro = input.RoleId;
         user.IsActive = input.IsActive;
+    }
+
+    private bool IsAdmin()
+    {
+        return _sessionService is null || _sessionService.IsInRole(RoleNames.Admin);
+    }
+
+    private void EnsureAdmin()
+    {
+        if (!IsAdmin())
+        {
+            throw new UnauthorizedAccessException("Bạn không có quyền quản lý tài khoản.");
+        }
     }
 }

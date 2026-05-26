@@ -7,14 +7,21 @@ namespace quanlybanhang_nmcnpm.Services;
 public sealed class OrderService : IOrderService
 {
     private readonly ApplicationDbContext _dbContext;
+    private readonly IUserSessionService? _sessionService;
 
-    public OrderService(ApplicationDbContext dbContext)
+    public OrderService(ApplicationDbContext dbContext, IUserSessionService? sessionService = null)
     {
         _dbContext = dbContext;
+        _sessionService = sessionService;
     }
 
     public async Task<ValidationResult<OrderSummary>> CreateOrderAsync(CreateOrderInput input)
     {
+        if (!HasSalesAccess())
+        {
+            return ValidationResult<OrderSummary>.Failure("Bạn không có quyền truy cập bán hàng.");
+        }
+
         var validation = await ValidateAsync(input);
         if (!validation.IsValid)
         {
@@ -76,6 +83,8 @@ public sealed class OrderService : IOrderService
 
     public async Task<OrderReceipt?> GetReceiptAsync(int orderId, decimal? paidAmount = null)
     {
+        EnsureSalesAccess();
+
         var order = await _dbContext.Orders
             .Include(o => o.Customer)
             .Include(o => o.OrderDetails)
@@ -175,5 +184,18 @@ public sealed class OrderService : IOrderService
         }
 
         return ValidationResult.Success();
+    }
+
+    private bool HasSalesAccess()
+    {
+        return _sessionService is null || _sessionService.IsInRole(RoleNames.Admin, RoleNames.Cashier);
+    }
+
+    private void EnsureSalesAccess()
+    {
+        if (!HasSalesAccess())
+        {
+            throw new UnauthorizedAccessException("Bạn không có quyền truy cập bán hàng.");
+        }
     }
 }

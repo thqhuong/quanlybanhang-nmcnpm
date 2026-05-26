@@ -7,9 +7,9 @@ public sealed class SalesViewModel : ViewModelBase
 {
     private readonly IProductService _productService;
     private readonly ICustomerService _customerService;
-    private readonly IAccountService _accountService;
     private readonly IOrderService _orderService;
     private readonly IReceiptService _receiptService;
+    private readonly IUserSessionService _sessionService;
     private readonly List<ProductListItem> _products = new();
     private int _employeeId;
     private string _productCode = "";
@@ -28,15 +28,15 @@ public sealed class SalesViewModel : ViewModelBase
     public SalesViewModel(
         IProductService productService,
         ICustomerService customerService,
-        IAccountService accountService,
         IOrderService orderService,
-        IReceiptService receiptService)
+        IReceiptService receiptService,
+        IUserSessionService sessionService)
     {
         _productService = productService;
         _customerService = customerService;
-        _accountService = accountService;
         _orderService = orderService;
         _receiptService = receiptService;
+        _sessionService = sessionService;
         LoadCommand = new AsyncRelayCommand(LoadAsync);
         AddProductCommand = new AsyncRelayCommand(AddProductAsync);
         RemoveLineCommand = new RelayCommand(RemoveSelectedLine, () => SelectedCartLine is not null);
@@ -162,10 +162,7 @@ public sealed class SalesViewModel : ViewModelBase
         SelectedCustomer = Customers.FirstOrDefault(customer => customer.Name == "Khách lẻ")
             ?? Customers.FirstOrDefault();
 
-        var accounts = await _accountService.GetAllAsync();
-        _employeeId = accounts.FirstOrDefault(account => account.Role == "Cashier" && account.IsActive)?.Id
-            ?? accounts.FirstOrDefault(account => account.IsActive)?.Id
-            ?? 0;
+        _employeeId = _sessionService.CurrentUser?.Id ?? 0;
     }
 
     private async Task AddProductAsync()

@@ -9,6 +9,12 @@ public sealed class UserSessionService : IUserSessionService
         CurrentUser = userSession;
     }
 
+    public bool IsInRole(params string[] roles)
+    {
+        return CurrentUser is not null
+            && roles.Any(role => string.Equals(CurrentUser.Role, role, StringComparison.OrdinalIgnoreCase));
+    }
+
     public void Clear()
     {
         CurrentUser = null;
