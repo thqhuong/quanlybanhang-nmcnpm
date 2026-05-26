@@ -23,7 +23,7 @@ public sealed class AccountAndOverviewServiceTests
             "bad-email",
             roleId,
             true,
-            "123456"));
+            "admin"));
         Assert.False(invalid.IsValid);
 
         var created = await service.CreateAsync(new AccountInput(
@@ -33,7 +33,7 @@ public sealed class AccountAndOverviewServiceTests
             "cashier.demo@example.local",
             roleId,
             true,
-            "123456"));
+            "admin"));
 
         Assert.True(created.IsValid, created.ErrorMessage);
         Assert.Equal("cashier.demo", created.Value!.Username);
@@ -58,5 +58,30 @@ public sealed class AccountAndOverviewServiceTests
         Assert.True(metrics.Revenue > 0);
         Assert.NotEmpty(metrics.TopProducts);
         Assert.NotEmpty(metrics.LowStockItems);
+    }
+
+    [Fact]
+    public async Task Cashier_CannotReadAccounts()
+    {
+        await using var dbContext = await ServiceTestFixture.CreateSeededDbContextAsync();
+        var session = new UserSessionService();
+        session.Start(new UserSession(2, "cashier", "Cashier", RoleNames.Cashier, 2));
+        var service = new AccountService(dbContext, session);
+
+        await Assert.ThrowsAsync<UnauthorizedAccessException>(() => service.GetAllAsync());
+    }
+
+    [Fact]
+    public async Task Storekeeper_CannotReadSalesOrOverview()
+    {
+        await using var dbContext = await ServiceTestFixture.CreateSeededDbContextAsync();
+        var session = new UserSessionService();
+        session.Start(new UserSession(3, "storekeeper", "Storekeeper", RoleNames.Storekeeper, 3));
+
+        var customerService = new CustomerService(dbContext, session);
+        var overviewService = new OverviewService(dbContext, session);
+
+        await Assert.ThrowsAsync<UnauthorizedAccessException>(() => customerService.GetAllAsync());
+        await Assert.ThrowsAsync<UnauthorizedAccessException>(() => overviewService.GetMetricsAsync());
     }
 }

@@ -47,6 +47,7 @@ public interface IAccountService
 public interface IUserSessionService
 {
     UserSession? CurrentUser { get; }
+    bool IsInRole(params string[] roles);
     void Start(UserSession userSession);
     void Clear();
 }

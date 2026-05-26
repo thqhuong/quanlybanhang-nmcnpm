@@ -8,7 +8,7 @@ public sealed class ImportViewModel : ViewModelBase
 {
     private readonly IProductService _productService;
     private readonly IInventoryService _inventoryService;
-    private readonly IAccountService _accountService;
+    private readonly IUserSessionService _sessionService;
     private readonly List<ProductListItem> _products = new();
     private int _employeeId;
     private CategoryOption? _selectedSupplier;
@@ -21,15 +21,16 @@ public sealed class ImportViewModel : ViewModelBase
     private string _note = "";
     private decimal _total;
     private string _statusMessage = "";
+    private ReceiptPrintData? _printData;
 
     public ImportViewModel(
         IProductService productService,
         IInventoryService inventoryService,
-        IAccountService accountService)
+        IUserSessionService sessionService)
     {
         _productService = productService;
         _inventoryService = inventoryService;
-        _accountService = accountService;
+        _sessionService = sessionService;
         LoadCommand = new AsyncRelayCommand(LoadAsync);
         AddLineCommand = new AsyncRelayCommand(AddLineAsync);
         RemoveLineCommand = new RelayCommand(RemoveSelectedLine, () => SelectedLine is not null);
@@ -128,10 +129,7 @@ public sealed class ImportViewModel : ViewModelBase
         await RefreshLowStockAsync();
         SelectedSupplier ??= Suppliers.FirstOrDefault();
 
-        var accounts = await _accountService.GetAllAsync();
-        _employeeId = accounts.FirstOrDefault(account => account.Role == "Storekeeper" && account.IsActive)?.Id
-            ?? accounts.FirstOrDefault(account => account.IsActive)?.Id
-            ?? 0;
+        _employeeId = _sessionService.CurrentUser?.Id ?? 0;
     }
 
     private async Task AddLineAsync()
@@ -216,6 +214,15 @@ public sealed class ImportViewModel : ViewModelBase
         StatusMessage = result.IsValid ? "Đã lưu phiếu nhập." : result.ErrorMessage ?? "";
         if (result.IsValid)
         {
+            _printData = new ReceiptPrintData(
+                SelectedSupplier.Name,
+                _sessionService.CurrentUser?.FullName ?? "",
+                DeliveredBy,
+                Note,
+                DateTime.Now,
+                Total,
+                Lines.ToList());
+            PrintCommand.RaiseCanExecuteChanged();
             ClearReceipt();
             await LoadAsync();
         }

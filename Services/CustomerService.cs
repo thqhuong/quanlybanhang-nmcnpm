@@ -7,14 +7,18 @@ namespace quanlybanhang_nmcnpm.Services;
 public sealed class CustomerService : ICustomerService
 {
     private readonly ApplicationDbContext _dbContext;
+    private readonly IUserSessionService? _sessionService;
 
-    public CustomerService(ApplicationDbContext dbContext)
+    public CustomerService(ApplicationDbContext dbContext, IUserSessionService? sessionService = null)
     {
         _dbContext = dbContext;
+        _sessionService = sessionService;
     }
 
     public async Task<IReadOnlyList<CustomerListItem>> GetAllAsync()
     {
+        EnsureSalesAccess();
+
         var customers = await CustomerQuery()
             .OrderBy(customer => customer.TenKH)
             .ToListAsync();
@@ -24,6 +28,8 @@ public sealed class CustomerService : ICustomerService
 
     public async Task<IReadOnlyList<CustomerListItem>> SearchAsync(string? searchText)
     {
+        EnsureSalesAccess();
+
         var query = CustomerQuery();
         var normalized = searchText?.Trim().ToLowerInvariant();
 
@@ -43,6 +49,11 @@ public sealed class CustomerService : ICustomerService
 
     public async Task<ValidationResult<CustomerListItem>> CreateAsync(CustomerInput input)
     {
+        if (!HasSalesAccess())
+        {
+            return ValidationResult<CustomerListItem>.Failure("Bạn không có quyền truy cập bán hàng.");
+        }
+
         var validation = await ValidateAsync(input);
         if (!validation.IsValid)
         {
@@ -60,6 +71,11 @@ public sealed class CustomerService : ICustomerService
 
     public async Task<ValidationResult<CustomerListItem>> UpdateAsync(int id, CustomerInput input)
     {
+        if (!HasSalesAccess())
+        {
+            return ValidationResult<CustomerListItem>.Failure("Bạn không có quyền truy cập bán hàng.");
+        }
+
         var customer = await CustomerQuery().FirstOrDefaultAsync(c => c.MaKH == id);
         if (customer is null)
         {
@@ -79,6 +95,11 @@ public sealed class CustomerService : ICustomerService
 
     public async Task<ValidationResult> DeleteAsync(int id)
     {
+        if (!HasSalesAccess())
+        {
+            return ValidationResult.Failure("Bạn không có quyền truy cập bán hàng.");
+        }
+
         var customer = await _dbContext.Customers.FirstOrDefaultAsync(c => c.MaKH == id);
         if (customer is null)
         {
@@ -147,5 +168,18 @@ public sealed class CustomerService : ICustomerService
         customer.DiaChiKH = input.Address.Trim();
         customer.NgaySinh = input.BirthDate;
         customer.DiemTichLuy = input.Points;
+    }
+
+    private bool HasSalesAccess()
+    {
+        return _sessionService is null || _sessionService.IsInRole(RoleNames.Admin, RoleNames.Cashier);
+    }
+
+    private void EnsureSalesAccess()
+    {
+        if (!HasSalesAccess())
+        {
+            throw new UnauthorizedAccessException("Bạn không có quyền truy cập bán hàng.");
+        }
     }
 }

@@ -16,14 +16,18 @@ public sealed class InventoryService : IInventoryService
 {
     private const int DefaultLowStockThreshold = 20;
     private readonly ApplicationDbContext _dbContext;
+    private readonly IUserSessionService? _sessionService;
 
-    public InventoryService(ApplicationDbContext dbContext)
+    public InventoryService(ApplicationDbContext dbContext, IUserSessionService? sessionService = null)
     {
         _dbContext = dbContext;
+        _sessionService = sessionService;
     }
 
     public async Task<IReadOnlyList<CategoryOption>> GetSuppliersAsync()
     {
+        EnsureWarehouseAccess();
+
         return await _dbContext.Categories
             .OrderBy(category => category.TenNCC)
             .Select(category => new CategoryOption(category.MaNhaCungCap, category.TenNCC))
@@ -46,6 +50,11 @@ public sealed class InventoryService : IInventoryService
 
     public async Task<ValidationResult<decimal>> CreateReceiptAsync(CreateInventoryReceiptInput input)
     {
+        if (!HasWarehouseAccess())
+        {
+            return ValidationResult<decimal>.Failure("Bạn không có quyền truy cập kho.");
+        }
+
         var validation = await ValidateAsync(input);
         if (!validation.IsValid)
         {
@@ -288,5 +297,18 @@ public sealed class InventoryService : IInventoryService
             Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
             "QuanLyBanHang",
             "InventoryReceipts");
+    }
+
+    private bool HasWarehouseAccess()
+    {
+        return _sessionService is null || _sessionService.IsInRole(RoleNames.Admin, RoleNames.Storekeeper);
+    }
+
+    private void EnsureWarehouseAccess()
+    {
+        if (!HasWarehouseAccess())
+        {
+            throw new UnauthorizedAccessException("Bạn không có quyền truy cập kho.");
+        }
     }
 }
