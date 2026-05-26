@@ -39,54 +39,24 @@
         </Style>
     </Window.Resources>
 
-    <StackPanel Margin="0,30,0,0">
-        <TextBlock Text="Chọn loại người dùng" FontSize="26" FontWeight="Bold" Foreground="#123E82" HorizontalAlignment="Center" Margin="0,10,0,15"/>
+    <StackPanel Margin="0,30,0,0" HorizontalAlignment="Center" Width="340">
+        <TextBlock Text="Đăng nhập" FontSize="26" FontWeight="Bold" Foreground="#123E82" HorizontalAlignment="Center" Margin="0,10,0,15"/>
         <TextBlock Text="Vui lòng đăng nhập để tiếp tục" FontSize="16" Foreground="#666666" HorizontalAlignment="Center" Margin="0,0,0,30"/>
 
-        <!-- Admin -->
-        <Button Style="{StaticResource RoleButtonStyle}" Click="Admin_Click">
+        <TextBox x:Name="UsernameBox" Height="36" VerticalContentAlignment="Center" Margin="0,0,0,12" ToolTip="Tên đăng nhập"/>
+        <PasswordBox x:Name="PasswordBox" Height="36" VerticalContentAlignment="Center" Margin="0,0,0,12" ToolTip="Mật khẩu"/>
+        <Button Style="{StaticResource RoleButtonStyle}" Click="Login_Click" Height="48" Padding="20,10" Margin="0" HorizontalAlignment="Center" HorizontalContentAlignment="Center">
             <Grid>
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="70"/>
+                    <ColumnDefinition Width="40"/>
                     <ColumnDefinition Width="*"/>
                 </Grid.ColumnDefinitions>
-                <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xEA18;" FontSize="28" Foreground="#D62828" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE72E;" FontSize="18" Foreground="#2A9D8F" VerticalAlignment="Center" HorizontalAlignment="Center"/>
                 <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                    <TextBlock Text="Quản trị viên (Admin)" FontWeight="Bold" FontSize="18" Foreground="#111111"/>
-                    <TextBlock Text="Toàn quyền truy cập hệ thống" FontSize="14" Foreground="#777777" Margin="0,5,0,0"/>
+                    <TextBlock Text="Đăng nhập" FontWeight="Bold" FontSize="18" Foreground="#111111"/>
                 </StackPanel>
             </Grid>
         </Button>
-
-        <!-- Cashier -->
-        <Button Style="{StaticResource RoleButtonStyle}" Click="Cashier_Click">
-             <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="70"/>
-                    <ColumnDefinition Width="*"/>
-                </Grid.ColumnDefinitions>
-                <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE77B;" FontSize="28" Foreground="#0077B6" VerticalAlignment="Center" HorizontalAlignment="Center"/>
-                <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                    <TextBlock Text="Thu ngân (Cashier)" FontWeight="Bold" FontSize="18" Foreground="#111111"/>
-                    <TextBlock Text="Quản lý thanh toán và hóa đơn" FontSize="14" Foreground="#777777" Margin="0,5,0,0"/>
-                </StackPanel>
-            </Grid>
-        </Button>
-
-        <!-- Storekeeper -->
-        <Button Style="{StaticResource RoleButtonStyle}" Click="Storekeeper_Click">
-             <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="70"/>
-                    <ColumnDefinition Width="*"/>
-                </Grid.ColumnDefinitions>
-                <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE74C;" FontSize="28" Foreground="#2A9D8F" VerticalAlignment="Center" HorizontalAlignment="Center"/>
-                <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                    <TextBlock Text="Thủ kho (Storekeeper)" FontWeight="Bold" FontSize="18" Foreground="#111111"/>
-                    <TextBlock Text="Quản lý hàng hóa, nhập xuất kho" FontSize="14" Foreground="#777777" Margin="0,5,0,0"/>
-                </StackPanel>
-            </Grid>
-        </Button>
-
+        <TextBlock x:Name="StatusText" Text="" FontSize="14" Foreground="#C62828" HorizontalAlignment="Center" Margin="0,12,0,0"/>
     </StackPanel>
 </Window>

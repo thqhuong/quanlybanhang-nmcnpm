@@ -13,6 +13,7 @@ public sealed class AccountsViewModel : ViewModelBase
     private string _phone = "";
     private string _email = "";
     private bool _isActive = true;
+    private string _password = "";
     private string _statusMessage = "";
 
     public AccountsViewModel(IAccountService accountService)
@@ -82,6 +83,12 @@ public sealed class AccountsViewModel : ViewModelBase
     {
         get => _isActive;
         set => SetProperty(ref _isActive, value);
+    }
+
+    public string Password
+    {
+        get => _password;
+        set => SetProperty(ref _password, value);
     }
 
     public string StatusMessage
@@ -160,7 +167,7 @@ public sealed class AccountsViewModel : ViewModelBase
             return null;
         }
 
-        return new AccountInput(Username, FullName, Phone, Email, SelectedRole.Id, IsActive);
+        return new AccountInput(Username, FullName, Phone, Email, SelectedRole.Id, IsActive, Password);
     }
 
     private void FillForm(AccountListItem? account)
@@ -186,6 +193,7 @@ public sealed class AccountsViewModel : ViewModelBase
         Phone = "";
         Email = "";
         IsActive = true;
+        Password = "";
         StatusMessage = "";
     }
 }

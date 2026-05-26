@@ -28,6 +28,8 @@
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="140"/>
                     <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="130"/>
+                    <ColumnDefinition Width="160"/>
                     <ColumnDefinition Width="150"/>
                     <ColumnDefinition Width="200"/>
                     <ColumnDefinition Width="150"/>
@@ -38,7 +40,8 @@
                 <TextBox Grid.Column="2" Text="{Binding Phone, UpdateSourceTrigger=PropertyChanged}" Height="30" VerticalContentAlignment="Center" Margin="0,0,8,0" ToolTip="Số điện thoại"/>
                 <TextBox Grid.Column="3" Text="{Binding Email, UpdateSourceTrigger=PropertyChanged}" Height="30" VerticalContentAlignment="Center" Margin="0,0,8,0" ToolTip="Email"/>
                 <ComboBox Grid.Column="4" ItemsSource="{Binding Roles}" SelectedItem="{Binding SelectedRole}" DisplayMemberPath="Name" Height="30" VerticalContentAlignment="Center" Margin="0,0,8,0"/>
-                <CheckBox Grid.Column="5" Content="Hoạt động" IsChecked="{Binding IsActive}" VerticalAlignment="Center"/>
+                <PasswordBox Grid.Column="5" Height="30" VerticalContentAlignment="Center" Margin="0,0,8,0" ToolTip="Mật khẩu" PasswordChanged="PasswordBox_PasswordChanged"/>
+                <CheckBox Grid.Column="6" Content="Hoạt động" IsChecked="{Binding IsActive}" VerticalAlignment="Center"/>
             </Grid>
         </Border>
 
