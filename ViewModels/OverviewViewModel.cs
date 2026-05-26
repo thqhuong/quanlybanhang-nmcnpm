@@ -7,8 +7,8 @@ public sealed class OverviewViewModel : ViewModelBase
 {
     private readonly IOverviewService _overviewService;
     private string _selectedDateRange = "Hôm nay";
-    private string _fromDateText = DateTime.Today.ToString("dd/MM/yyyy");
-    private string _toDateText = DateTime.Today.ToString("dd/MM/yyyy");
+    private DateTime? _fromDate = DateTime.Today;
+    private DateTime? _toDate = DateTime.Today;
     private decimal _revenue;
     private int _orderCount;
     private decimal _averageOrderValue;
@@ -44,16 +44,16 @@ public sealed class OverviewViewModel : ViewModelBase
         }
     }
 
-    public string FromDateText
+    public DateTime? FromDate
     {
-        get => _fromDateText;
-        set => SetProperty(ref _fromDateText, value);
+        get => _fromDate;
+        set => SetProperty(ref _fromDate, value);
     }
 
-    public string ToDateText
+    public DateTime? ToDate
     {
-        get => _toDateText;
-        set => SetProperty(ref _toDateText, value);
+        get => _toDate;
+        set => SetProperty(ref _toDate, value);
     }
 
     public decimal Revenue
@@ -94,13 +94,13 @@ public sealed class OverviewViewModel : ViewModelBase
 
     private async Task LoadAsync()
     {
-        if (!TryParseDate(FromDateText, out var from) || !TryParseDate(ToDateText, out var to))
+        if (FromDate is null || ToDate is null)
         {
-            StatusMessage = "Vui lòng nhập ngày theo định dạng dd/MM/yyyy.";
+            StatusMessage = "Vui lòng chọn ngày.";
             return;
         }
 
-        var metrics = await _overviewService.GetMetricsAsync(from, to);
+        var metrics = await _overviewService.GetMetricsAsync(FromDate.Value, ToDate.Value);
         Revenue = metrics.Revenue;
         OrderCount = metrics.OrderCount;
         AverageOrderValue = metrics.AverageOrderValue;
@@ -129,17 +129,8 @@ public sealed class OverviewViewModel : ViewModelBase
             from = new DateTime(today.Year, today.Month, 1);
         }
 
-        FromDateText = from.ToString("dd/MM/yyyy");
-        ToDateText = to.ToString("dd/MM/yyyy");
+        FromDate = from;
+        ToDate = to;
     }
 
-    private static bool TryParseDate(string value, out DateTime date)
-    {
-        return DateTime.TryParseExact(
-            value.Trim(),
-            "dd/MM/yyyy",
-            null,
-            System.Globalization.DateTimeStyles.None,
-            out date);
-    }
 }

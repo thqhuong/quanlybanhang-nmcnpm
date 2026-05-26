@@ -22,6 +22,17 @@ public partial class MainWindow : Window
         InitializeComponent();
     }
 
+    private void PasswordBox_GotFocus(object sender, RoutedEventArgs e)
+    {
+        PasswordPlaceholder.Visibility = Visibility.Collapsed;
+    }
+
+    private void PasswordBox_LostFocus(object sender, RoutedEventArgs e)
+    {
+        if (string.IsNullOrEmpty(PasswordBox.Password))
+            PasswordPlaceholder.Visibility = Visibility.Visible;
+    }
+
     private async void Login_Click(object sender, RoutedEventArgs e)
     {
         StatusText.Text = string.Empty;

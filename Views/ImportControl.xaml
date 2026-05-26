@@ -94,7 +94,7 @@
                             </Grid.ColumnDefinitions>
                             <TextBox Grid.Column="0" Text="{Binding ProductCode, UpdateSourceTrigger=PropertyChanged}" Height="32" VerticalContentAlignment="Center" Margin="0,0,8,0" Padding="5,0" ToolTip="Mã sản phẩm" Tag="Mã sản phẩm" Style="{StaticResource WatermarkTextBoxStyle}"/>
                             <TextBox Grid.Column="1" Text="{Binding QuantityText, UpdateSourceTrigger=PropertyChanged}" Height="32" TextAlignment="Center" VerticalContentAlignment="Center" Margin="0,0,8,0" Tag="Số lượng" Style="{StaticResource WatermarkTextBoxStyle}"/>
-                            <TextBox Grid.Column="2" Text="{Binding UnitCostText, UpdateSourceTrigger=PropertyChanged}" Height="32" TextAlignment="Right" VerticalContentAlignment="Center" Margin="0,0,8,0" Tag="Đơn giá nhập" Style="{StaticResource WatermarkTextBoxStyle}"/>
+                            <TextBox Grid.Column="2" Text="{Binding UnitCostText, UpdateSourceTrigger=PropertyChanged}" Height="32" TextAlignment="Center" VerticalContentAlignment="Center" Margin="0,0,8,0" Tag="Đơn giá nhập" Style="{StaticResource WatermarkTextBoxStyle}"/>
                             <Button Grid.Column="3" Command="{Binding AddLineCommand}" Background="#0078D7" Foreground="White" BorderThickness="0" Height="30" Content="Thêm"/>
                             <Button Grid.Column="4" Command="{Binding RemoveLineCommand}" Background="#C62828" Foreground="White" BorderThickness="0" Height="30" Margin="8,0,0,0" Content="Xóa dòng"/>
                         </Grid>
