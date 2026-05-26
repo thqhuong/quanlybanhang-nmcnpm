@@ -16,8 +16,7 @@
                 <TextBlock Text="BÁN HÀNG TẠI QUẦY" FontSize="16" FontWeight="Bold" Foreground="#004C99" VerticalAlignment="Center"/>
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
                     <Button Content="&#xE8A5; Đơn mới" Command="{Binding NewOrderCommand}" FontFamily="Segoe UI, Segoe MDL2 Assets" Background="#E0E0E0" BorderThickness="0" Padding="10,5" Height="30" Margin="0,0,8,0"/>
-                    <Button Content="&#xE8A5; Xuất hóa đơn" Command="{Binding ExportReceiptCommand}" FontFamily="Segoe UI, Segoe MDL2 Assets" Background="#E0E0E0" BorderThickness="0" Padding="10,5" Height="30" Margin="0,0,8,0"/>
-                    <Button Content="&#xE749; In hóa đơn" Command="{Binding PrintReceiptCommand}" FontFamily="Segoe UI, Segoe MDL2 Assets" Background="#E0E0E0" BorderThickness="0" Padding="10,5" Height="30"/>
+                    <Button Content="&#xE749; In lại HĐ" FontFamily="Segoe UI, Segoe MDL2 Assets" Background="#E0E0E0" BorderThickness="0" Padding="10,5" Height="30"/>
                 </StackPanel>
             </Grid>
         </Border>
@@ -45,13 +44,13 @@
                             </Grid.ColumnDefinitions>
 
                             <StackPanel Grid.Column="0" Margin="0,0,10,0">
-                                <TextBlock Text="Mã hoặc tên sản phẩm" FontSize="12" Foreground="#666666" Margin="0,0,0,5"/>
-                                <TextBox Text="{Binding ProductCode, UpdateSourceTrigger=PropertyChanged}" Height="35" VerticalContentAlignment="Center" BorderBrush="#0078D7" BorderThickness="2" Padding="10,0"/>
+                                <TextBlock Text="Mã sản phẩm" FontSize="12" Foreground="#666666" Margin="0,0,0,5"/>
+                                <TextBox Text="{Binding ProductCode, UpdateSourceTrigger=PropertyChanged}" Height="38" VerticalContentAlignment="Center" BorderBrush="#0078D7" BorderThickness="2" Padding="10,0" Tag="Mã sản phẩm" Style="{StaticResource WatermarkTextBoxStyle}"/>
                             </StackPanel>
 
                             <StackPanel Grid.Column="1" Margin="0,0,10,0">
                                 <TextBlock Text="Số lượng" FontSize="12" Foreground="#666666" Margin="0,0,0,5"/>
-                                <TextBox Text="{Binding QuantityText, UpdateSourceTrigger=PropertyChanged}" Height="35" TextAlignment="Center" VerticalContentAlignment="Center" BorderBrush="#CCCCCC"/>
+                                <TextBox Text="{Binding QuantityText, UpdateSourceTrigger=PropertyChanged}" Height="38" TextAlignment="Center" VerticalContentAlignment="Center" BorderBrush="#CCCCCC" Tag="Số lượng" Style="{StaticResource WatermarkTextBoxStyle}"/>
                             </StackPanel>
 
                             <Button Grid.Column="2" Command="{Binding AddProductCommand}" Background="#0078D7" Foreground="White" BorderThickness="0" Height="35" VerticalAlignment="Bottom" Content="Thêm"/>
@@ -101,7 +100,21 @@
                     <Border Grid.Row="1" Padding="15">
                         <StackPanel>
                             <TextBlock Text="Khách hàng" FontSize="12" Foreground="#666666" Margin="0,0,0,5"/>
-                            <ComboBox ItemsSource="{Binding Customers}" SelectedItem="{Binding SelectedCustomer}" DisplayMemberPath="Name" Height="35" VerticalContentAlignment="Center" Margin="0,0,0,18"/>
+                            <Grid Margin="0,0,0,18">
+                                <ComboBox ItemsSource="{Binding Customers}" SelectedItem="{Binding SelectedCustomer}" DisplayMemberPath="Name" Height="38" VerticalContentAlignment="Center" Style="{StaticResource FieldComboBoxStyle}"/>
+                                <TextBlock Text="Chọn khách hàng" Foreground="#999999" IsHitTestVisible="False" Margin="12,0,0,0" VerticalAlignment="Center">
+                                    <TextBlock.Style>
+                                        <Style TargetType="TextBlock">
+                                            <Setter Property="Visibility" Value="Collapsed"/>
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding SelectedCustomer}" Value="{x:Null}">
+                                                    <Setter Property="Visibility" Value="Visible"/>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </TextBlock.Style>
+                                </TextBlock>
+                            </Grid>
 
                             <Grid Margin="0,0,0,10">
                                 <TextBlock Text="Tổng tiền hàng:" Foreground="#666666"/>
@@ -114,7 +127,7 @@
                                     <ColumnDefinition Width="110"/>
                                 </Grid.ColumnDefinitions>
                                 <TextBlock Grid.Column="0" Text="Giảm giá:" Foreground="#666666" VerticalAlignment="Center"/>
-                                <TextBox Grid.Column="1" Text="{Binding DiscountText, UpdateSourceTrigger=PropertyChanged}" TextAlignment="Right" Height="30" VerticalContentAlignment="Center" BorderBrush="#CCCCCC"/>
+                                <TextBox Grid.Column="1" Text="{Binding DiscountText, UpdateSourceTrigger=PropertyChanged}" TextAlignment="Right" Height="32" VerticalContentAlignment="Center" BorderBrush="#CCCCCC" Tag="Giảm giá" Style="{StaticResource WatermarkTextBoxStyle}"/>
                             </Grid>
 
                             <Grid>
@@ -132,14 +145,9 @@
                             </Grid>
 
                             <TextBlock Text="Khách thanh toán" FontSize="12" Foreground="#666666" Margin="0,0,0,5"/>
-                            <TextBox Text="{Binding PaymentText, UpdateSourceTrigger=PropertyChanged}" Height="40" FontSize="16" Foreground="#2E7D32" TextAlignment="Right" VerticalContentAlignment="Center" BorderBrush="#CCCCCC" Margin="0,0,0,10"/>
+                            <TextBox Text="{Binding PaymentText, UpdateSourceTrigger=PropertyChanged}" Height="44" FontSize="16" Foreground="#2E7D32" TextAlignment="Right" VerticalContentAlignment="Center" BorderBrush="#CCCCCC" Margin="0,0,0,12" Tag="Số tiền khách đưa" Style="{StaticResource WatermarkTextBoxStyle}"/>
+                            <TextBlock Text="{Binding StatusMessage}" Foreground="#666666" Margin="0,0,0,12"/>
 
-                            <Grid Margin="0,0,0,12">
-                                <TextBlock Text="Tiền thối:" Foreground="#666666"/>
-                                <TextBlock Text="{Binding Change, StringFormat={}{0:N0} đ}" FontWeight="Bold" HorizontalAlignment="Right"/>
-                            </Grid>
-
-                            <TextBlock Text="{Binding StatusMessage}" Foreground="#666666" Margin="0,0,0,12" TextWrapping="Wrap"/>
                             <Button Command="{Binding CheckoutCommand}" Background="#2E7D32" Foreground="White" Height="45" BorderThickness="0" Content="THANH TOÁN (F9)" FontWeight="Bold" FontSize="16"/>
                         </StackPanel>
                     </Border>
