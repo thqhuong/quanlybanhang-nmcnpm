@@ -8,6 +8,8 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <UseWPF>true</UseWPF>
     <DefaultItemExcludes>$(DefaultItemExcludes);bin\**;obj\**;quanlybanhang-nmcnpm.Tests\**</DefaultItemExcludes>
+	<GenerateAssemblyInfo>false</GenerateAssemblyInfo>  
+	<GenerateTargetFrameworkAttribute>false</GenerateTargetFrameworkAttribute>
   </PropertyGroup>
 
   <ItemGroup>
