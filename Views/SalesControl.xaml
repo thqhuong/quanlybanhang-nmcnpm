@@ -16,7 +16,7 @@
                 <TextBlock Text="BÁN HÀNG TẠI QUẦY" FontSize="16" FontWeight="Bold" Foreground="#004C99" VerticalAlignment="Center"/>
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
                     <Button Content="&#xE8A5; Đơn mới" Command="{Binding NewOrderCommand}" FontFamily="Segoe UI, Segoe MDL2 Assets" Background="#E0E0E0" BorderThickness="0" Padding="10,5" Height="30" Margin="0,0,8,0"/>
-                    <Button Content="&#xE749; In lại HĐ" FontFamily="Segoe UI, Segoe MDL2 Assets" Background="#E0E0E0" BorderThickness="0" Padding="10,5" Height="30"/>
+                    <Button Content="&#xE749; In lại HĐ" Command="{Binding PrintReceiptCommand}" FontFamily="Segoe UI, Segoe MDL2 Assets" Background="#E0E0E0" BorderThickness="0" Padding="10,5" Height="30"/>
                 </StackPanel>
             </Grid>
         </Border>
