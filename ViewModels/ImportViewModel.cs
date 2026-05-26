@@ -37,6 +37,7 @@ public sealed class ImportViewModel : ViewModelBase
 
     public ObservableCollection<CategoryOption> Suppliers { get; } = new();
     public ObservableCollection<ReceiptLine> Lines { get; } = new();
+    public ObservableCollection<LowStockReportItem> LowStockItems { get; } = new();
 
     public AsyncRelayCommand LoadCommand { get; }
     public AsyncRelayCommand AddLineCommand { get; }
@@ -105,12 +106,14 @@ public sealed class ImportViewModel : ViewModelBase
     }
 
     public int LineCount => Lines.Count;
+    public int LowStockCount => LowStockItems.Count;
 
     private async Task LoadAsync()
     {
         _products.Clear();
         _products.AddRange(await _productService.GetAllAsync());
         Suppliers.ResetWith(await _inventoryService.GetSuppliersAsync());
+        await RefreshLowStockAsync();
         SelectedSupplier ??= Suppliers.FirstOrDefault();
 
         var accounts = await _accountService.GetAllAsync();
@@ -127,9 +130,9 @@ public sealed class ImportViewModel : ViewModelBase
             return;
         }
 
-        if (!decimal.TryParse(UnitCostText, out var unitCost) || unitCost < 0)
+        if (!decimal.TryParse(UnitCostText, out var unitCost) || unitCost <= 0)
         {
-            StatusMessage = "Đơn giá nhập không hợp lệ.";
+            StatusMessage = "Đơn giá nhập phải lớn hơn 0.";
             return;
         }
 
@@ -227,6 +230,12 @@ public sealed class ImportViewModel : ViewModelBase
     {
         Total = Lines.Sum(line => line.LineTotal);
         OnPropertyChanged(nameof(LineCount));
+    }
+
+    private async Task RefreshLowStockAsync()
+    {
+        LowStockItems.ResetWith(await _inventoryService.GetLowStockAsync());
+        OnPropertyChanged(nameof(LowStockCount));
     }
 }
 

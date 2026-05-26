@@ -6,6 +6,7 @@ namespace quanlybanhang_nmcnpm.Services;
 
 public sealed class InventoryService : IInventoryService
 {
+    private const int DefaultLowStockThreshold = 20;
     private readonly ApplicationDbContext _dbContext;
 
     public InventoryService(ApplicationDbContext dbContext)
@@ -21,6 +22,20 @@ public sealed class InventoryService : IInventoryService
             .ToListAsync();
     }
 
+    public async Task<IReadOnlyList<LowStockReportItem>> GetLowStockAsync(int threshold = DefaultLowStockThreshold)
+    {
+        return await _dbContext.Products
+            .Where(product => product.SoLuongTon <= threshold)
+            .OrderBy(product => product.SoLuongTon)
+            .ThenBy(product => product.MaSanPham)
+            .Select(product => new LowStockReportItem(
+                product.MaSanPham,
+                product.TenHang,
+                product.SoLuongTon,
+                product.DonViTinh))
+            .ToListAsync();
+    }
+
     public async Task<ValidationResult<decimal>> CreateReceiptAsync(CreateInventoryReceiptInput input)
     {
         var validation = await ValidateAsync(input);
@@ -33,6 +48,10 @@ public sealed class InventoryService : IInventoryService
         var products = await _dbContext.Products
             .Where(product => productIds.Contains(product.MaHang))
             .ToDictionaryAsync(product => product.MaHang);
+        if (products.Count != productIds.Count)
+        {
+            return ValidationResult<decimal>.Failure("Sản phẩm không hợp lệ.");
+        }
 
         var total = input.Lines.Sum(line => line.Quantity * line.UnitCost);
         var receipt = new InventoryReceipt
@@ -96,14 +115,9 @@ public sealed class InventoryService : IInventoryService
                 return ValidationResult.Failure("Số lượng nhập phải lớn hơn 0.");
             }
 
-            if (line.UnitCost < 0)
+            if (line.UnitCost <= 0)
             {
-                return ValidationResult.Failure("Đơn giá nhập không được âm.");
-            }
-
-            if (!await _dbContext.Products.AnyAsync(product => product.MaHang == line.ProductId))
-            {
-                return ValidationResult.Failure("Sản phẩm không hợp lệ.");
+                return ValidationResult.Failure("Đơn giá nhập phải lớn hơn 0.");
             }
         }
 

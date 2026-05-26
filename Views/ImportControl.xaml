@@ -74,67 +74,94 @@
             <Border Grid.Column="1" BorderBrush="#E0E0E0" BorderThickness="1" Padding="15">
                 <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
                     <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE783;" FontSize="40" Foreground="#B0BEC5" HorizontalAlignment="Center" Margin="0,0,0,10"/>
-                    <TextBlock Text="TỔNG TIỀN THANH TOÁN" FontWeight="Bold" Foreground="#546E7A" HorizontalAlignment="Center"/>
+                    <TextBlock Text="TỔNG TIỀN NHẬP" FontWeight="Bold" Foreground="#546E7A" HorizontalAlignment="Center"/>
                     <TextBlock Text="{Binding Total, StringFormat={}{0:N0} đ}" FontSize="28" FontWeight="Bold" Foreground="#D32F2F" HorizontalAlignment="Center" Margin="0,10,0,0"/>
                 </StackPanel>
             </Border>
         </Grid>
 
-        <Border Grid.Row="2" BorderBrush="#E0E0E0" BorderThickness="1">
-            <Grid>
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="*"/>
-                </Grid.RowDefinitions>
+        <Grid Grid.Row="2">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="280"/>
+            </Grid.ColumnDefinitions>
 
-                <Border Grid.Row="0" Background="#F8F9FA" Padding="10" BorderBrush="#E0E0E0" BorderThickness="0,0,0,1">
-                    <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="140"/>
-                            <ColumnDefinition Width="90"/>
-                            <ColumnDefinition Width="130"/>
-                            <ColumnDefinition Width="100"/>
-                            <ColumnDefinition Width="100"/>
-                        </Grid.ColumnDefinitions>
-                        <TextBox Grid.Column="0" Text="{Binding ProductCode, UpdateSourceTrigger=PropertyChanged}" Height="32" VerticalContentAlignment="Center" Margin="0,0,8,0" Padding="5,0" ToolTip="Mã sản phẩm" Tag="Mã sản phẩm" Style="{StaticResource WatermarkTextBoxStyle}"/>
-                        <TextBox Grid.Column="1" Text="{Binding QuantityText, UpdateSourceTrigger=PropertyChanged}" Height="32" TextAlignment="Center" VerticalContentAlignment="Center" Margin="0,0,8,0" Tag="Số lượng" Style="{StaticResource WatermarkTextBoxStyle}"/>
-                        <TextBox Grid.Column="2" Text="{Binding UnitCostText, UpdateSourceTrigger=PropertyChanged}" Height="32" TextAlignment="Right" VerticalContentAlignment="Center" Margin="0,0,8,0" Tag="Đơn giá nhập" Style="{StaticResource WatermarkTextBoxStyle}"/>
-                        <Button Grid.Column="3" Command="{Binding AddLineCommand}" Background="#0078D7" Foreground="White" BorderThickness="0" Height="30" Content="Thêm"/>
-                        <Button Grid.Column="4" Command="{Binding RemoveLineCommand}" Background="#C62828" Foreground="White" BorderThickness="0" Height="30" Margin="8,0,0,0" Content="Xóa dòng"/>
-                    </Grid>
-                </Border>
+            <Border Grid.Column="0" BorderBrush="#E0E0E0" BorderThickness="1" Margin="0,0,10,0">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
 
-                <ListView Grid.Row="1" ItemsSource="{Binding Lines}" SelectedItem="{Binding SelectedLine}" BorderThickness="0">
-                    <ListView.View>
-                        <GridView>
-                            <GridViewColumn Header="Mã SP" Width="100" DisplayMemberBinding="{Binding Code}"/>
-                            <GridViewColumn Header="Tên hàng hóa" Width="260" DisplayMemberBinding="{Binding Name}"/>
-                            <GridViewColumn Header="ĐVT" Width="70" DisplayMemberBinding="{Binding Unit}"/>
-                            <GridViewColumn Header="Số lượng" Width="90" DisplayMemberBinding="{Binding Quantity}"/>
-                            <GridViewColumn Header="Đơn giá nhập" Width="130">
-                                <GridViewColumn.CellTemplate>
-                                    <DataTemplate>
-                                        <TextBlock Text="{Binding UnitCost, StringFormat={}{0:N0} đ}" HorizontalAlignment="Right"/>
-                                    </DataTemplate>
-                                </GridViewColumn.CellTemplate>
-                            </GridViewColumn>
-                            <GridViewColumn Header="Thành tiền" Width="150">
-                                <GridViewColumn.CellTemplate>
-                                    <DataTemplate>
-                                        <TextBlock Text="{Binding LineTotal, StringFormat={}{0:N0} đ}" FontWeight="Bold" Foreground="#D32F2F" HorizontalAlignment="Right"/>
-                                    </DataTemplate>
-                                </GridViewColumn.CellTemplate>
-                            </GridViewColumn>
-                        </GridView>
-                    </ListView.View>
-                </ListView>
-            </Grid>
-        </Border>
+                    <Border Grid.Row="0" Background="#F8F9FA" Padding="10" BorderBrush="#E0E0E0" BorderThickness="0,0,0,1">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="140"/>
+                                <ColumnDefinition Width="90"/>
+                                <ColumnDefinition Width="130"/>
+                                <ColumnDefinition Width="100"/>
+                                <ColumnDefinition Width="100"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBox Grid.Column="0" Text="{Binding ProductCode, UpdateSourceTrigger=PropertyChanged}" Height="32" VerticalContentAlignment="Center" Margin="0,0,8,0" Padding="5,0" ToolTip="Mã sản phẩm" Tag="Mã sản phẩm" Style="{StaticResource WatermarkTextBoxStyle}"/>
+                            <TextBox Grid.Column="1" Text="{Binding QuantityText, UpdateSourceTrigger=PropertyChanged}" Height="32" TextAlignment="Center" VerticalContentAlignment="Center" Margin="0,0,8,0" Tag="Số lượng" Style="{StaticResource WatermarkTextBoxStyle}"/>
+                            <TextBox Grid.Column="2" Text="{Binding UnitCostText, UpdateSourceTrigger=PropertyChanged}" Height="32" TextAlignment="Right" VerticalContentAlignment="Center" Margin="0,0,8,0" Tag="Đơn giá nhập" Style="{StaticResource WatermarkTextBoxStyle}"/>
+                            <Button Grid.Column="3" Command="{Binding AddLineCommand}" Background="#0078D7" Foreground="White" BorderThickness="0" Height="30" Content="Thêm"/>
+                            <Button Grid.Column="4" Command="{Binding RemoveLineCommand}" Background="#C62828" Foreground="White" BorderThickness="0" Height="30" Margin="8,0,0,0" Content="Xóa dòng"/>
+                        </Grid>
+                    </Border>
+
+                    <ListView Grid.Row="1" ItemsSource="{Binding Lines}" SelectedItem="{Binding SelectedLine}" BorderThickness="0">
+                        <ListView.View>
+                            <GridView>
+                                <GridViewColumn Header="Mã SP" Width="100" DisplayMemberBinding="{Binding Code}"/>
+                                <GridViewColumn Header="Tên hàng hóa" Width="240" DisplayMemberBinding="{Binding Name}"/>
+                                <GridViewColumn Header="ĐVT" Width="65" DisplayMemberBinding="{Binding Unit}"/>
+                                <GridViewColumn Header="Số lượng" Width="80" DisplayMemberBinding="{Binding Quantity}"/>
+                                <GridViewColumn Header="Đơn giá nhập" Width="120">
+                                    <GridViewColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding UnitCost, StringFormat={}{0:N0} đ}" HorizontalAlignment="Right"/>
+                                        </DataTemplate>
+                                    </GridViewColumn.CellTemplate>
+                                </GridViewColumn>
+                                <GridViewColumn Header="Thành tiền" Width="130">
+                                    <GridViewColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding LineTotal, StringFormat={}{0:N0} đ}" FontWeight="Bold" Foreground="#D32F2F" HorizontalAlignment="Right"/>
+                                        </DataTemplate>
+                                    </GridViewColumn.CellTemplate>
+                                </GridViewColumn>
+                            </GridView>
+                        </ListView.View>
+                    </ListView>
+                </Grid>
+            </Border>
+
+            <GroupBox Grid.Column="1" Header="Sắp hết hàng">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+                    <TextBlock Text="{Binding LowStockCount, StringFormat={}{0} sản phẩm cần nhập thêm}" Margin="4,0,4,8" Foreground="#666666"/>
+                    <ListView Grid.Row="1" ItemsSource="{Binding LowStockItems}" BorderThickness="0">
+                        <ListView.View>
+                            <GridView>
+                                <GridViewColumn Header="Mã" Width="60" DisplayMemberBinding="{Binding ProductCode}"/>
+                                <GridViewColumn Header="Tên hàng" Width="115" DisplayMemberBinding="{Binding ProductName}"/>
+                                <GridViewColumn Header="Tồn" Width="40" DisplayMemberBinding="{Binding Stock}"/>
+                                <GridViewColumn Header="ĐVT" Width="40" DisplayMemberBinding="{Binding Unit}"/>
+                            </GridView>
+                        </ListView.View>
+                    </ListView>
+                </Grid>
+            </GroupBox>
+        </Grid>
 
         <Border Grid.Row="3" Background="#F1F3F5" BorderBrush="#E0E0E0" BorderThickness="1,0,1,1" Padding="10,5">
             <Grid>
                 <TextBlock Text="{Binding StatusMessage}" Foreground="#333333"/>
-                <TextBlock Text="{Binding LineCount, StringFormat= Tổng số mặt hàng: {0}}" Foreground="#333333" HorizontalAlignment="Right"/>
+                <TextBlock Text="{Binding LineCount, StringFormat=Tổng số mặt hàng: {0}}" Foreground="#333333" HorizontalAlignment="Right"/>
             </Grid>
         </Border>
     </Grid>

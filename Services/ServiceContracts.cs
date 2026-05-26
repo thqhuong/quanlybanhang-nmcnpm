@@ -28,6 +28,7 @@ public interface IOrderService
 public interface IInventoryService
 {
     Task<IReadOnlyList<CategoryOption>> GetSuppliersAsync();
+    Task<IReadOnlyList<LowStockReportItem>> GetLowStockAsync(int threshold = 20);
     Task<ValidationResult<decimal>> CreateReceiptAsync(CreateInventoryReceiptInput input);
 }
 
