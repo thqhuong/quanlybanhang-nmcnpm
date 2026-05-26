@@ -1,23 +1,18 @@
-﻿using System.Text;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 
 namespace quanlybanhang_nmcnpm;
 
-/// <summary>
-/// Interaction logic for MainWindow.xaml
-/// </summary>
 public partial class MainWindow : Window
 {
-    public MainWindow()
+    private readonly IServiceProvider _serviceProvider;
+
+    public MainWindow() : this(App.Services)
     {
+    }
+
+    public MainWindow(IServiceProvider serviceProvider)
+    {
+        _serviceProvider = serviceProvider;
         InitializeComponent();
     }
 
@@ -38,8 +33,8 @@ public partial class MainWindow : Window
 
     private void OpenDashboard(string roleName)
     {
-        DashboardWindow dashboard = new DashboardWindow(roleName);
+        var dashboard = new DashboardWindow(roleName, _serviceProvider);
         dashboard.Show();
-        this.Close();
+        Close();
     }
 }
