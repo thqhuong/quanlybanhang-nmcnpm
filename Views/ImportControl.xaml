@@ -45,14 +45,28 @@
                             <RowDefinition Height="35"/>
                         </Grid.RowDefinitions>
                         <TextBlock Text="Nhà cung cấp:" VerticalAlignment="Center" FontWeight="SemiBold"/>
-                        <ComboBox Grid.Column="0" ItemsSource="{Binding Suppliers}" SelectedItem="{Binding SelectedSupplier}" DisplayMemberPath="Name" Margin="95,4,10,4"/>
+                        <Grid Grid.Column="0" Margin="95,4,10,4">
+                            <ComboBox ItemsSource="{Binding Suppliers}" SelectedItem="{Binding SelectedSupplier}" DisplayMemberPath="Name" Height="32" VerticalContentAlignment="Center" Style="{StaticResource FieldComboBoxStyle}"/>
+                            <TextBlock Text="Chọn nhà cung cấp" Foreground="#999999" IsHitTestVisible="False" Margin="12,0,0,0" VerticalAlignment="Center">
+                                <TextBlock.Style>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding SelectedSupplier}" Value="{x:Null}">
+                                                <Setter Property="Visibility" Value="Visible"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                            </TextBlock>
+                        </Grid>
                         <TextBlock Grid.Row="1" Text="Người giao:" VerticalAlignment="Center" FontWeight="SemiBold"/>
-                        <TextBox Grid.Row="1" Text="{Binding DeliveredBy, UpdateSourceTrigger=PropertyChanged}" Margin="95,4,10,4" VerticalContentAlignment="Center"/>
+                        <TextBox Grid.Row="1" Text="{Binding DeliveredBy, UpdateSourceTrigger=PropertyChanged}" Margin="95,4,10,4" Height="32" VerticalContentAlignment="Center" Tag="Tên người giao" Style="{StaticResource WatermarkTextBoxStyle}"/>
 
                         <TextBlock Grid.Column="1" Text="Ngày nhập:" VerticalAlignment="Center" FontWeight="SemiBold"/>
-                        <TextBox Grid.Column="1" Text="Hôm nay" IsReadOnly="True" Margin="95,4,0,4" VerticalContentAlignment="Center"/>
+                        <TextBox Grid.Column="1" Text="Hôm nay" IsReadOnly="True" Margin="95,4,0,4" Height="32" VerticalContentAlignment="Center" Tag="Ngày nhập" Style="{StaticResource WatermarkTextBoxStyle}"/>
                         <TextBlock Grid.Column="1" Grid.Row="1" Text="Ghi chú:" VerticalAlignment="Center" FontWeight="SemiBold"/>
-                        <TextBox Grid.Column="1" Grid.Row="1" Text="{Binding Note, UpdateSourceTrigger=PropertyChanged}" Margin="95,4,0,4" VerticalContentAlignment="Center"/>
+                        <TextBox Grid.Column="1" Grid.Row="1" Text="{Binding Note, UpdateSourceTrigger=PropertyChanged}" Margin="95,4,0,4" Height="32" VerticalContentAlignment="Center" Tag="Ghi chú" Style="{StaticResource WatermarkTextBoxStyle}"/>
                     </Grid>
                 </Grid>
             </Border>
@@ -82,9 +96,9 @@
                             <ColumnDefinition Width="100"/>
                             <ColumnDefinition Width="100"/>
                         </Grid.ColumnDefinitions>
-                        <TextBox Grid.Column="0" Text="{Binding ProductCode, UpdateSourceTrigger=PropertyChanged}" Height="30" VerticalContentAlignment="Center" Margin="0,0,8,0" Padding="5,0" ToolTip="Mã sản phẩm"/>
-                        <TextBox Grid.Column="1" Text="{Binding QuantityText, UpdateSourceTrigger=PropertyChanged}" Height="30" TextAlignment="Center" VerticalContentAlignment="Center" Margin="0,0,8,0"/>
-                        <TextBox Grid.Column="2" Text="{Binding UnitCostText, UpdateSourceTrigger=PropertyChanged}" Height="30" TextAlignment="Right" VerticalContentAlignment="Center" Margin="0,0,8,0"/>
+                        <TextBox Grid.Column="0" Text="{Binding ProductCode, UpdateSourceTrigger=PropertyChanged}" Height="32" VerticalContentAlignment="Center" Margin="0,0,8,0" Padding="5,0" ToolTip="Mã sản phẩm" Tag="Mã sản phẩm" Style="{StaticResource WatermarkTextBoxStyle}"/>
+                        <TextBox Grid.Column="1" Text="{Binding QuantityText, UpdateSourceTrigger=PropertyChanged}" Height="32" TextAlignment="Center" VerticalContentAlignment="Center" Margin="0,0,8,0" Tag="Số lượng" Style="{StaticResource WatermarkTextBoxStyle}"/>
+                        <TextBox Grid.Column="2" Text="{Binding UnitCostText, UpdateSourceTrigger=PropertyChanged}" Height="32" TextAlignment="Right" VerticalContentAlignment="Center" Margin="0,0,8,0" Tag="Đơn giá nhập" Style="{StaticResource WatermarkTextBoxStyle}"/>
                         <Button Grid.Column="3" Command="{Binding AddLineCommand}" Background="#0078D7" Foreground="White" BorderThickness="0" Height="30" Content="Thêm"/>
                         <Button Grid.Column="4" Command="{Binding RemoveLineCommand}" Background="#C62828" Foreground="White" BorderThickness="0" Height="30" Margin="8,0,0,0" Content="Xóa dòng"/>
                     </Grid>
