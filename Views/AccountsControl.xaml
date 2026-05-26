@@ -4,7 +4,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              mc:Ignorable="d"
-             d:DesignHeight="600" d:DesignWidth="900" Background="White">
+             d:DesignHeight="600" Background="White" Width="983">
     <Grid Margin="20">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
@@ -26,21 +26,35 @@
         <Border Grid.Row="1" Background="#F8F9FA" BorderBrush="#E0E0E0" BorderThickness="1" Padding="10" Margin="0,0,0,10">
             <Grid>
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="140"/>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="130"/>
-                    <ColumnDefinition Width="160"/>
-                    <ColumnDefinition Width="150"/>
-                    <ColumnDefinition Width="120"/>
-                    <ColumnDefinition Width="80"/>
+                    <ColumnDefinition Width="113"/>
+                    <ColumnDefinition Width="113"/>
+                    <ColumnDefinition Width="148"/>
+                    <ColumnDefinition Width="154"/>
+                    <ColumnDefinition Width="136"/>
+                    <ColumnDefinition Width="114"/>
+                    <ColumnDefinition Width="302"/>
                 </Grid.ColumnDefinitions>
-                <TextBox Grid.Column="0" Text="{Binding Username, UpdateSourceTrigger=PropertyChanged}" Height="30" VerticalContentAlignment="Center" Margin="0,0,8,0" ToolTip="Tên đăng nhập"/>
-                <TextBox Grid.Column="1" Text="{Binding FullName, UpdateSourceTrigger=PropertyChanged}" Height="30" VerticalContentAlignment="Center" Margin="0,0,8,0" ToolTip="Họ tên"/>
-                <TextBox Grid.Column="2" Text="{Binding Phone, UpdateSourceTrigger=PropertyChanged}" Height="30" VerticalContentAlignment="Center" Margin="0,0,8,0" ToolTip="Số điện thoại"/>
-                <TextBox Grid.Column="3" Text="{Binding Email, UpdateSourceTrigger=PropertyChanged}" Height="30" VerticalContentAlignment="Center" Margin="0,0,8,0" ToolTip="Email"/>
-                <ComboBox Grid.Column="4" ItemsSource="{Binding Roles}" SelectedItem="{Binding SelectedRole}" DisplayMemberPath="Name" Height="30" VerticalContentAlignment="Center" Margin="0,0,8,0"/>
-                <PasswordBox Grid.Column="5" Height="30" VerticalContentAlignment="Center" Margin="0,0,8,0" ToolTip="Mật khẩu" PasswordChanged="PasswordBox_PasswordChanged"/>
-                <CheckBox Grid.Column="6" Content="Hoạt động" IsChecked="{Binding IsActive}" VerticalAlignment="Center"/>
+                <TextBox Grid.Column="0" Text="{Binding Username, UpdateSourceTrigger=PropertyChanged}" VerticalContentAlignment="Center" Margin="0,0,8,0" ToolTip="Tên đăng nhập" Tag="Tên đăng nhập" Style="{StaticResource WatermarkTextBoxStyle}"/>
+                <TextBox Grid.Column="1" Text="{Binding FullName, UpdateSourceTrigger=PropertyChanged}" VerticalContentAlignment="Center" Margin="0,0,8,0" ToolTip="Họ tên" Tag="Họ tên" Style="{StaticResource WatermarkTextBoxStyle}"/>
+                <TextBox Grid.Column="2" Text="{Binding Phone, UpdateSourceTrigger=PropertyChanged}" VerticalContentAlignment="Center" Margin="0,0,8,0" ToolTip="Số điện thoại" Tag="Số điện thoại" Style="{StaticResource WatermarkTextBoxStyle}"/>
+                <TextBox Grid.Column="3" Text="{Binding Email, UpdateSourceTrigger=PropertyChanged}" VerticalContentAlignment="Center" Margin="0,0,8,0" ToolTip="Email" Tag="Email" Style="{StaticResource WatermarkTextBoxStyle}"/>
+                <Grid Grid.Column="4" Margin="0,0,8,0">
+                    <ComboBox ItemsSource="{Binding Roles}" SelectedItem="{Binding SelectedRole}" DisplayMemberPath="Name" Height="32" VerticalContentAlignment="Center" Style="{StaticResource FieldComboBoxStyle}"/>
+                    <TextBlock Text="Vai trò" Foreground="#999999" IsHitTestVisible="False" Margin="12,0,0,0" VerticalAlignment="Center">
+                        <TextBlock.Style>
+                            <Style TargetType="TextBlock">
+                                <Setter Property="Visibility" Value="Collapsed"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding SelectedRole}" Value="{x:Null}">
+                                        <Setter Property="Visibility" Value="Visible"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </TextBlock.Style>
+                    </TextBlock>
+                </Grid>
+                <PasswordBox Grid.Column="5" VerticalContentAlignment="Center" Margin="0,0,8,0" ToolTip="Mật khẩu" Tag="Mật khẩu" Style="{StaticResource WatermarkPasswordBoxStyle}" PasswordChanged="PasswordBox_PasswordChanged"/>
+                <CheckBox Grid.Column="6" Content="Hoạt động" IsChecked="{Binding IsActive}" VerticalAlignment="Center" Height="16"/>
             </Grid>
         </Border>
 
