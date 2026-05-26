@@ -34,19 +34,33 @@
                     <ColumnDefinition Width="100"/>
                     <ColumnDefinition Width="170"/>
                 </Grid.ColumnDefinitions>
-                <TextBox Grid.Column="0" Text="{Binding Code, UpdateSourceTrigger=PropertyChanged}" Height="30" VerticalContentAlignment="Center" Margin="0,0,8,0" ToolTip="Mã sản phẩm"/>
-                <TextBox Grid.Column="1" Text="{Binding Name, UpdateSourceTrigger=PropertyChanged}" Height="30" VerticalContentAlignment="Center" Margin="0,0,8,0" ToolTip="Tên hàng hóa"/>
-                <TextBox Grid.Column="2" Text="{Binding Unit, UpdateSourceTrigger=PropertyChanged}" Height="30" VerticalContentAlignment="Center" Margin="0,0,8,0" ToolTip="Đơn vị tính"/>
-                <TextBox Grid.Column="3" Text="{Binding PriceText, UpdateSourceTrigger=PropertyChanged}" Height="30" TextAlignment="Right" VerticalContentAlignment="Center" Margin="0,0,8,0" ToolTip="Đơn giá bán"/>
-                <TextBox Grid.Column="4" Text="{Binding StockText, UpdateSourceTrigger=PropertyChanged}" Height="30" TextAlignment="Right" VerticalContentAlignment="Center" Margin="0,0,8,0" ToolTip="Tồn kho"/>
-                <ComboBox Grid.Column="5" ItemsSource="{Binding Categories}" SelectedItem="{Binding SelectedCategory}" DisplayMemberPath="Name" Height="30" VerticalContentAlignment="Center"/>
+                <TextBox Grid.Column="0" Text="{Binding Code, UpdateSourceTrigger=PropertyChanged}" Height="32" VerticalContentAlignment="Center" Margin="0,0,8,0" ToolTip="Mã sản phẩm" Tag="Mã sản phẩm" Style="{StaticResource WatermarkTextBoxStyle}"/>
+                <TextBox Grid.Column="1" Text="{Binding Name, UpdateSourceTrigger=PropertyChanged}" Height="32" VerticalContentAlignment="Center" Margin="0,0,8,0" ToolTip="Tên hàng hóa" Tag="Tên hàng hóa" Style="{StaticResource WatermarkTextBoxStyle}"/>
+                <TextBox Grid.Column="2" Text="{Binding Unit, UpdateSourceTrigger=PropertyChanged}" Height="32" VerticalContentAlignment="Center" Margin="0,0,8,0" ToolTip="Đơn vị tính" Tag="Đơn vị tính" Style="{StaticResource WatermarkTextBoxStyle}"/>
+                <TextBox Grid.Column="3" Text="{Binding PriceText, UpdateSourceTrigger=PropertyChanged}" Height="32" TextAlignment="Right" VerticalContentAlignment="Center" Margin="0,0,8,0" ToolTip="Đơn giá bán" Tag="Đơn giá bán" Style="{StaticResource WatermarkTextBoxStyle}"/>
+                <TextBox Grid.Column="4" Text="{Binding StockText, UpdateSourceTrigger=PropertyChanged}" Height="32" TextAlignment="Right" VerticalContentAlignment="Center" Margin="0,0,8,0" ToolTip="Tồn kho" Tag="Tồn kho" Style="{StaticResource WatermarkTextBoxStyle}"/>
+                <Grid Grid.Column="5">
+                    <ComboBox ItemsSource="{Binding Categories}" SelectedItem="{Binding SelectedCategory}" DisplayMemberPath="Name" Height="32" VerticalContentAlignment="Center" Style="{StaticResource FieldComboBoxStyle}"/>
+                    <TextBlock Text="Nhóm hàng" Foreground="#999999" IsHitTestVisible="False" Margin="12,0,0,0" VerticalAlignment="Center">
+                        <TextBlock.Style>
+                            <Style TargetType="TextBlock">
+                                <Setter Property="Visibility" Value="Collapsed"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding SelectedCategory}" Value="{x:Null}">
+                                        <Setter Property="Visibility" Value="Visible"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </TextBlock.Style>
+                    </TextBlock>
+                </Grid>
             </Grid>
         </Border>
 
         <Border Grid.Row="2" Background="#F8F9FA" BorderBrush="#E0E0E0" BorderThickness="1" Padding="10" Margin="0,0,0,10">
             <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                 <TextBlock Text="Tìm kiếm:" VerticalAlignment="Center" Margin="0,0,10,0"/>
-                <TextBox Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}" Width="260" Height="30" VerticalContentAlignment="Center" Margin="0,0,8,0"/>
+                <TextBox Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}" Width="260" Height="32" VerticalContentAlignment="Center" Margin="0,0,8,0" Tag="Tìm kiếm hàng hóa" Style="{StaticResource WatermarkTextBoxStyle}"/>
                 <Button Content="&#xE721; Lọc" Command="{Binding SearchCommand}" FontFamily="Segoe UI, Segoe MDL2 Assets" Background="White" BorderBrush="#CCCCCC" Height="30" Padding="15,0"/>
                 <TextBlock Text="{Binding StatusMessage}" VerticalAlignment="Center" Margin="20,0,0,0" Foreground="#666666"/>
             </StackPanel>

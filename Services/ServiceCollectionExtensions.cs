@@ -13,6 +13,7 @@ public static class ServiceCollectionExtensions
         services.AddTransient<IAccountService, AccountService>();
         services.AddTransient<IOverviewService, OverviewService>();
         services.AddTransient<IReceiptService, ReceiptService>();
+        services.AddSingleton<IUserSessionService, UserSessionService>();
 
         return services;
     }

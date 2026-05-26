@@ -33,18 +33,18 @@
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="90"/>
                 </Grid.ColumnDefinitions>
-                <TextBox Grid.Column="0" Text="{Binding Name, UpdateSourceTrigger=PropertyChanged}" Height="30" VerticalContentAlignment="Center" Margin="0,0,8,0" ToolTip="Tên khách hàng"/>
-                <TextBox Grid.Column="1" Text="{Binding Phone, UpdateSourceTrigger=PropertyChanged}" Height="30" VerticalContentAlignment="Center" Margin="0,0,8,0" ToolTip="Số điện thoại"/>
-                <TextBox Grid.Column="2" Text="{Binding Email, UpdateSourceTrigger=PropertyChanged}" Height="30" VerticalContentAlignment="Center" Margin="0,0,8,0" ToolTip="Email"/>
-                <TextBox Grid.Column="3" Text="{Binding Address, UpdateSourceTrigger=PropertyChanged}" Height="30" VerticalContentAlignment="Center" Margin="0,0,8,0" ToolTip="Địa chỉ"/>
-                <TextBox Grid.Column="4" Text="{Binding PointsText, UpdateSourceTrigger=PropertyChanged}" Height="30" TextAlignment="Right" VerticalContentAlignment="Center" ToolTip="Điểm tích lũy"/>
+                <TextBox Grid.Column="0" Text="{Binding Name, UpdateSourceTrigger=PropertyChanged}" Height="32" VerticalContentAlignment="Center" Margin="0,0,8,0" ToolTip="Tên khách hàng" Tag="Tên khách hàng" Style="{StaticResource WatermarkTextBoxStyle}"/>
+                <TextBox Grid.Column="1" Text="{Binding Phone, UpdateSourceTrigger=PropertyChanged}" Height="32" VerticalContentAlignment="Center" Margin="0,0,8,0" ToolTip="Số điện thoại" Tag="Số điện thoại" Style="{StaticResource WatermarkTextBoxStyle}"/>
+                <TextBox Grid.Column="2" Text="{Binding Email, UpdateSourceTrigger=PropertyChanged}" Height="32" VerticalContentAlignment="Center" Margin="0,0,8,0" ToolTip="Email" Tag="Email" Style="{StaticResource WatermarkTextBoxStyle}"/>
+                <TextBox Grid.Column="3" Text="{Binding Address, UpdateSourceTrigger=PropertyChanged}" Height="32" VerticalContentAlignment="Center" Margin="0,0,8,0" ToolTip="Địa chỉ" Tag="Địa chỉ" Style="{StaticResource WatermarkTextBoxStyle}"/>
+                <TextBox Grid.Column="4" Text="{Binding PointsText, UpdateSourceTrigger=PropertyChanged}" Height="32" TextAlignment="Right" VerticalContentAlignment="Center" ToolTip="Điểm tích lũy" Tag="Điểm tích lũy" Style="{StaticResource WatermarkTextBoxStyle}"/>
             </Grid>
         </Border>
 
         <Border Grid.Row="2" Background="#F8F9FA" BorderBrush="#E0E0E0" BorderThickness="1" Padding="10" Margin="0,0,0,10">
             <StackPanel Orientation="Horizontal">
                 <TextBlock Text="Tìm kiếm:" VerticalAlignment="Center" Margin="0,0,10,0"/>
-                <TextBox Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}" Width="300" Height="30" VerticalContentAlignment="Center" Margin="0,0,8,0"/>
+                <TextBox Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}" Width="300" Height="32" VerticalContentAlignment="Center" Margin="0,0,8,0" Tag="Tìm kiếm khách hàng" Style="{StaticResource WatermarkTextBoxStyle}"/>
                 <Button Content="&#xE721; Lọc" Command="{Binding SearchCommand}" FontFamily="Segoe UI, Segoe MDL2 Assets" Background="White" BorderBrush="#CCCCCC" Height="30" Padding="15,0"/>
                 <TextBlock Text="{Binding StatusMessage}" VerticalAlignment="Center" Margin="20,0,0,0" Foreground="#666666"/>
             </StackPanel>
