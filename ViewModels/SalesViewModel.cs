@@ -179,13 +179,6 @@ public sealed class SalesViewModel : ViewModelBase
 
         if (product is null)
         {
-            var searchResult = await _productService.SearchAsync(code);
-            product = searchResult.FirstOrDefault(p => p.Code.Equals(code, StringComparison.OrdinalIgnoreCase))
-                ?? searchResult.FirstOrDefault();
-        }
-
-        if (product is null)
-        {
             StatusMessage = "Không tìm thấy sản phẩm.";
             return;
         }
