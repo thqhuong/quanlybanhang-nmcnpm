@@ -56,6 +56,7 @@ public sealed class OrderAndInventoryServiceTests
         var result = await service.CreateReceiptAsync(new CreateInventoryReceiptInput(
             ids.SupplierId,
             ids.EmployeeId,
+            DateTime.Today,
             "Nhà cung cấp demo",
             "Nhập kiểm thử",
             new[] { new InventoryReceiptLineInput(ids.ProductId, 5, 20000m) }));
@@ -85,6 +86,7 @@ public sealed class OrderAndInventoryServiceTests
         await AssertInvalidReceiptAsync(ids => new CreateInventoryReceiptInput(
             -1,
             ids.EmployeeId,
+            DateTime.Today,
             "Nhà cung cấp demo",
             "",
             new[] { new InventoryReceiptLineInput(ids.ProductId, 1, 1000m) }));
@@ -92,6 +94,7 @@ public sealed class OrderAndInventoryServiceTests
         await AssertInvalidReceiptAsync(ids => new CreateInventoryReceiptInput(
             ids.SupplierId,
             -1,
+            DateTime.Today,
             "Nhà cung cấp demo",
             "",
             new[] { new InventoryReceiptLineInput(ids.ProductId, 1, 1000m) }));
@@ -99,6 +102,7 @@ public sealed class OrderAndInventoryServiceTests
         await AssertInvalidReceiptAsync(ids => new CreateInventoryReceiptInput(
             ids.SupplierId,
             ids.EmployeeId,
+            DateTime.Today,
             "Nhà cung cấp demo",
             "",
             Array.Empty<InventoryReceiptLineInput>()));
@@ -106,6 +110,7 @@ public sealed class OrderAndInventoryServiceTests
         await AssertInvalidReceiptAsync(ids => new CreateInventoryReceiptInput(
             ids.SupplierId,
             ids.EmployeeId,
+            DateTime.Today,
             "Nhà cung cấp demo",
             "",
             new[] { new InventoryReceiptLineInput(-1, 1, 1000m) }));
@@ -113,6 +118,7 @@ public sealed class OrderAndInventoryServiceTests
         await AssertInvalidReceiptAsync(ids => new CreateInventoryReceiptInput(
             ids.SupplierId,
             ids.EmployeeId,
+            DateTime.Today,
             "Nhà cung cấp demo",
             "",
             new[] { new InventoryReceiptLineInput(ids.ProductId, 0, 1000m) }));
@@ -120,6 +126,7 @@ public sealed class OrderAndInventoryServiceTests
         await AssertInvalidReceiptAsync(ids => new CreateInventoryReceiptInput(
             ids.SupplierId,
             ids.EmployeeId,
+            DateTime.Today,
             "Nhà cung cấp demo",
             "",
             new[] { new InventoryReceiptLineInput(ids.ProductId, 1, 0m) }));
@@ -127,6 +134,7 @@ public sealed class OrderAndInventoryServiceTests
         await AssertInvalidReceiptAsync(ids => new CreateInventoryReceiptInput(
             ids.SupplierId,
             ids.EmployeeId,
+            DateTime.Today,
             "Nhà cung cấp demo",
             "",
             new[]

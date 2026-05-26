@@ -18,7 +18,8 @@
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
                 <Button Content="&#xE8A5; Tạo mới" Command="{Binding NewCommand}" FontFamily="Segoe UI, Segoe MDL2 Assets" Background="White" BorderBrush="#CCCCCC" Height="30" Padding="10,0" Margin="0,0,8,0"/>
                 <Button Content="&#xE74E; Lưu phiếu" Command="{Binding SaveCommand}" FontFamily="Segoe UI, Segoe MDL2 Assets" Background="#E8F5E9" BorderBrush="#81C784" Height="30" Padding="10,0" Margin="0,0,8,0" Foreground="#2E7D32" FontWeight="Bold"/>
-                <Button Content="&#xE749; In" FontFamily="Segoe UI, Segoe MDL2 Assets" Background="White" BorderBrush="#CCCCCC" Height="30" Padding="10,0"/>
+                <Button Content="&#xE838; Thư mục phiếu" Command="{Binding OpenReceiptFolderCommand}" FontFamily="Segoe UI, Segoe MDL2 Assets" Background="White" BorderBrush="#CCCCCC" Height="30" Padding="10,0" Margin="0,0,8,0"/>
+                <Button Content="&#xE749; In" Command="{Binding PrintCommand}" FontFamily="Segoe UI, Segoe MDL2 Assets" Background="White" BorderBrush="#CCCCCC" Height="30" Padding="10,0"/>
             </StackPanel>
         </Grid>
 
@@ -41,32 +42,20 @@
                             <ColumnDefinition Width="*"/>
                         </Grid.ColumnDefinitions>
                         <Grid.RowDefinitions>
-                            <RowDefinition Height="35"/>
-                            <RowDefinition Height="35"/>
+                            <RowDefinition Height="40"/>
+                            <RowDefinition Height="40"/>
                         </Grid.RowDefinitions>
                         <TextBlock Text="Nhà cung cấp:" VerticalAlignment="Center" FontWeight="SemiBold"/>
-                        <Grid Grid.Column="0" Margin="95,4,10,4">
-                            <ComboBox ItemsSource="{Binding Suppliers}" SelectedItem="{Binding SelectedSupplier}" DisplayMemberPath="Name" Height="32" VerticalContentAlignment="Center" Style="{StaticResource FieldComboBoxStyle}"/>
-                            <TextBlock Text="Chọn nhà cung cấp" Foreground="#999999" IsHitTestVisible="False" Margin="12,0,0,0" VerticalAlignment="Center">
-                                <TextBlock.Style>
-                                    <Style TargetType="TextBlock">
-                                        <Setter Property="Visibility" Value="Collapsed"/>
-                                        <Style.Triggers>
-                                            <DataTrigger Binding="{Binding SelectedSupplier}" Value="{x:Null}">
-                                                <Setter Property="Visibility" Value="Visible"/>
-                                            </DataTrigger>
-                                        </Style.Triggers>
-                                    </Style>
-                                </TextBlock.Style>
-                            </TextBlock>
-                        </Grid>
-                        <TextBlock Grid.Row="1" Text="Người giao:" VerticalAlignment="Center" FontWeight="SemiBold"/>
-                        <TextBox Grid.Row="1" Text="{Binding DeliveredBy, UpdateSourceTrigger=PropertyChanged}" Margin="95,4,10,4" Height="32" VerticalContentAlignment="Center" Tag="Tên người giao" Style="{StaticResource WatermarkTextBoxStyle}"/>
+                        <ComboBox Grid.Column="0" ItemsSource="{Binding Suppliers}" SelectedItem="{Binding SelectedSupplier}" DisplayMemberPath="Name" Margin="95,4,10,4" VerticalContentAlignment="Center" Style="{StaticResource FieldComboBoxStyle}"/>
+
+                        <TextBlock Grid.Row="1" Text="Bên giao:" VerticalAlignment="Center" FontWeight="SemiBold"/>
+                        <TextBox Grid.Row="1" Text="{Binding DeliveredBy, UpdateSourceTrigger=PropertyChanged}" Margin="95,4,10,4" VerticalContentAlignment="Center" Tag="Bên giao" Style="{StaticResource WatermarkTextBoxStyle}"/>
 
                         <TextBlock Grid.Column="1" Text="Ngày nhập:" VerticalAlignment="Center" FontWeight="SemiBold"/>
-                        <TextBox Grid.Column="1" Text="Hôm nay" IsReadOnly="True" Margin="95,4,0,4" Height="32" VerticalContentAlignment="Center" Tag="Ngày nhập" Style="{StaticResource WatermarkTextBoxStyle}"/>
+                        <TextBox Grid.Column="1" Text="{Binding ReceiptDateText, UpdateSourceTrigger=PropertyChanged}" Margin="95,4,0,4" VerticalContentAlignment="Center" Tag="dd/MM/yyyy" Style="{StaticResource WatermarkTextBoxStyle}"/>
+
                         <TextBlock Grid.Column="1" Grid.Row="1" Text="Ghi chú:" VerticalAlignment="Center" FontWeight="SemiBold"/>
-                        <TextBox Grid.Column="1" Grid.Row="1" Text="{Binding Note, UpdateSourceTrigger=PropertyChanged}" Margin="95,4,0,4" Height="32" VerticalContentAlignment="Center" Tag="Ghi chú" Style="{StaticResource WatermarkTextBoxStyle}"/>
+                        <TextBox Grid.Column="1" Grid.Row="1" Text="{Binding Note, UpdateSourceTrigger=PropertyChanged}" Margin="95,4,0,4" VerticalContentAlignment="Center" Tag="Ghi chú" Style="{StaticResource WatermarkTextBoxStyle}"/>
                     </Grid>
                 </Grid>
             </Border>
@@ -82,11 +71,12 @@
 
         <Grid Grid.Row="2">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="280"/>
+                <ColumnDefinition Width="*" MinWidth="520"/>
+                <ColumnDefinition Width="6"/>
+                <ColumnDefinition Width="330" MinWidth="260"/>
             </Grid.ColumnDefinitions>
 
-            <Border Grid.Column="0" BorderBrush="#E0E0E0" BorderThickness="1" Margin="0,0,10,0">
+            <Border Grid.Column="0" BorderBrush="#E0E0E0" BorderThickness="1" Margin="0,0,8,0">
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
@@ -114,17 +104,17 @@
                         <ListView.View>
                             <GridView>
                                 <GridViewColumn Header="Mã SP" Width="100" DisplayMemberBinding="{Binding Code}"/>
-                                <GridViewColumn Header="Tên hàng hóa" Width="240" DisplayMemberBinding="{Binding Name}"/>
-                                <GridViewColumn Header="ĐVT" Width="65" DisplayMemberBinding="{Binding Unit}"/>
-                                <GridViewColumn Header="Số lượng" Width="80" DisplayMemberBinding="{Binding Quantity}"/>
-                                <GridViewColumn Header="Đơn giá nhập" Width="120">
+                                <GridViewColumn Header="Tên hàng hóa" Width="260" DisplayMemberBinding="{Binding Name}"/>
+                                <GridViewColumn Header="ĐVT" Width="70" DisplayMemberBinding="{Binding Unit}"/>
+                                <GridViewColumn Header="Số lượng" Width="90" DisplayMemberBinding="{Binding Quantity}"/>
+                                <GridViewColumn Header="Đơn giá nhập" Width="130">
                                     <GridViewColumn.CellTemplate>
                                         <DataTemplate>
                                             <TextBlock Text="{Binding UnitCost, StringFormat={}{0:N0} đ}" HorizontalAlignment="Right"/>
                                         </DataTemplate>
                                     </GridViewColumn.CellTemplate>
                                 </GridViewColumn>
-                                <GridViewColumn Header="Thành tiền" Width="130">
+                                <GridViewColumn Header="Thành tiền" Width="150">
                                     <GridViewColumn.CellTemplate>
                                         <DataTemplate>
                                             <TextBlock Text="{Binding LineTotal, StringFormat={}{0:N0} đ}" FontWeight="Bold" Foreground="#D32F2F" HorizontalAlignment="Right"/>
@@ -137,7 +127,9 @@
                 </Grid>
             </Border>
 
-            <GroupBox Grid.Column="1" Header="Sắp hết hàng">
+            <GridSplitter Grid.Column="1" Width="6" HorizontalAlignment="Stretch" Background="#D0D7DE" ShowsPreview="True"/>
+
+            <GroupBox Grid.Column="2" Header="Sắp hết hàng">
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
@@ -147,10 +139,10 @@
                     <ListView Grid.Row="1" ItemsSource="{Binding LowStockItems}" BorderThickness="0">
                         <ListView.View>
                             <GridView>
-                                <GridViewColumn Header="Mã" Width="60" DisplayMemberBinding="{Binding ProductCode}"/>
-                                <GridViewColumn Header="Tên hàng" Width="115" DisplayMemberBinding="{Binding ProductName}"/>
-                                <GridViewColumn Header="Tồn" Width="40" DisplayMemberBinding="{Binding Stock}"/>
-                                <GridViewColumn Header="ĐVT" Width="40" DisplayMemberBinding="{Binding Unit}"/>
+                                <GridViewColumn Header="Mã" Width="75" DisplayMemberBinding="{Binding ProductCode}"/>
+                                <GridViewColumn Header="Tên hàng" Width="160" DisplayMemberBinding="{Binding ProductName}"/>
+                                <GridViewColumn Header="Tồn" Width="55" DisplayMemberBinding="{Binding Stock}"/>
+                                <GridViewColumn Header="ĐVT" Width="60" DisplayMemberBinding="{Binding Unit}"/>
                             </GridView>
                         </ListView.View>
                     </ListView>

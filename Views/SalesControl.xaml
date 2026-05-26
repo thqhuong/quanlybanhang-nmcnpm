@@ -16,7 +16,9 @@
                 <TextBlock Text="BÁN HÀNG TẠI QUẦY" FontSize="16" FontWeight="Bold" Foreground="#004C99" VerticalAlignment="Center"/>
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
                     <Button Content="&#xE8A5; Đơn mới" Command="{Binding NewOrderCommand}" FontFamily="Segoe UI, Segoe MDL2 Assets" Background="#E0E0E0" BorderThickness="0" Padding="10,5" Height="30" Margin="0,0,8,0"/>
-                    <Button Content="&#xE749; In lại HĐ" FontFamily="Segoe UI, Segoe MDL2 Assets" Background="#E0E0E0" BorderThickness="0" Padding="10,5" Height="30"/>
+                    <Button Content="&#xE8A5; Xuất hóa đơn" Command="{Binding ExportReceiptCommand}" FontFamily="Segoe UI, Segoe MDL2 Assets" Background="#E0E0E0" BorderThickness="0" Padding="10,5" Height="30" Margin="0,0,8,0"/>
+                    <Button Content="&#xE838; Thư mục hóa đơn" Command="{Binding OpenReceiptFolderCommand}" FontFamily="Segoe UI, Segoe MDL2 Assets" Background="#E0E0E0" BorderThickness="0" Padding="10,5" Height="30" Margin="0,0,8,0"/>
+                    <Button Content="&#xE749; In hóa đơn" Command="{Binding PrintReceiptCommand}" FontFamily="Segoe UI, Segoe MDL2 Assets" Background="#E0E0E0" BorderThickness="0" Padding="10,5" Height="30"/>
                 </StackPanel>
             </Grid>
         </Border>
@@ -36,25 +38,62 @@
 
                     <Border Grid.Row="0" Background="#F8F9FA" Padding="15" BorderBrush="#E0E0E0" BorderThickness="0,0,0,1">
                         <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
                             <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="100"/>
-                                <ColumnDefinition Width="100"/>
-                                <ColumnDefinition Width="100"/>
+                                <ColumnDefinition Width="125"/>
+                                <ColumnDefinition Width="8"/>
+                                <ColumnDefinition Width="*" MinWidth="115"/>
+                                <ColumnDefinition Width="8"/>
+                                <ColumnDefinition Width="75"/>
+                                <ColumnDefinition Width="8"/>
+                                <ColumnDefinition Width="82"/>
                             </Grid.ColumnDefinitions>
 
-                            <StackPanel Grid.Column="0" Margin="0,0,10,0">
+                            <StackPanel Grid.Column="0">
                                 <TextBlock Text="Mã sản phẩm" FontSize="12" Foreground="#666666" Margin="0,0,0,5"/>
                                 <TextBox Text="{Binding ProductCode, UpdateSourceTrigger=PropertyChanged}" Height="38" VerticalContentAlignment="Center" BorderBrush="#0078D7" BorderThickness="2" Padding="10,0" Tag="Mã sản phẩm" Style="{StaticResource WatermarkTextBoxStyle}"/>
                             </StackPanel>
 
-                            <StackPanel Grid.Column="1" Margin="0,0,10,0">
+                            <StackPanel Grid.Column="2">
+                                <TextBlock Text="Tên sản phẩm" FontSize="12" Foreground="#666666" Margin="0,0,0,5"/>
+                                <Grid>
+                                    <TextBox x:Name="ProductNameTextBox"
+                                             Text="{Binding ProductName, UpdateSourceTrigger=PropertyChanged}"
+                                             Height="38"
+                                             VerticalContentAlignment="Center"
+                                             BorderBrush="#CCCCCC"
+                                             Tag="Tên sản phẩm"
+                                             Style="{StaticResource WatermarkTextBoxStyle}"
+                                             KeyUp="ProductNameTextBox_KeyUp"
+                                             PreviewKeyDown="ProductNameTextBox_PreviewKeyDown"/>
+                                    <Popup x:Name="ProductSuggestionPopup"
+                                           PlacementTarget="{Binding ElementName=ProductNameTextBox}"
+                                           Placement="Bottom"
+                                           StaysOpen="False"
+                                           AllowsTransparency="True"
+                                           Width="{Binding ActualWidth, ElementName=ProductNameTextBox}">
+                                        <Border Background="White" BorderBrush="#BDBDBD" BorderThickness="1" MaxHeight="180">
+                                            <ListBox x:Name="ProductSuggestionListBox"
+                                                     ItemsSource="{Binding ProductNameSuggestions}"
+                                                     DisplayMemberPath="DisplayText"
+                                                     BorderThickness="0"
+                                                     MouseLeftButtonUp="ProductSuggestionListBox_MouseLeftButtonUp"/>
+                                        </Border>
+                                    </Popup>
+                                </Grid>
+                            </StackPanel>
+
+                            <StackPanel Grid.Column="4">
                                 <TextBlock Text="Số lượng" FontSize="12" Foreground="#666666" Margin="0,0,0,5"/>
                                 <TextBox Text="{Binding QuantityText, UpdateSourceTrigger=PropertyChanged}" Height="38" TextAlignment="Center" VerticalContentAlignment="Center" BorderBrush="#CCCCCC" Tag="Số lượng" Style="{StaticResource WatermarkTextBoxStyle}"/>
                             </StackPanel>
 
-                            <Button Grid.Column="2" Command="{Binding AddProductCommand}" Background="#0078D7" Foreground="White" BorderThickness="0" Height="35" VerticalAlignment="Bottom" Content="Thêm"/>
-                            <Button Grid.Column="3" Command="{Binding RemoveLineCommand}" Background="#C62828" Foreground="White" BorderThickness="0" Height="35" VerticalAlignment="Bottom" Margin="8,0,0,0" Content="Xóa dòng"/>
+                            <Button Grid.Column="6" Command="{Binding AddProductCommand}" Background="#0078D7" Foreground="White" BorderThickness="0" Height="35" VerticalAlignment="Bottom" Content="Thêm"/>
+
+                            <Button Grid.Row="1" Grid.ColumnSpan="7" Command="{Binding RemoveLineCommand}" Background="#C62828" Foreground="White" BorderThickness="0" Width="95" Height="30" HorizontalAlignment="Right" Margin="0,8,0,0" Content="Xóa dòng"/>
                         </Grid>
                     </Border>
 
@@ -62,7 +101,7 @@
                         <ListView.View>
                             <GridView>
                                 <GridViewColumn Header="Mã SP" Width="90" DisplayMemberBinding="{Binding Code}"/>
-                                <GridViewColumn Header="Tên hàng hóa" Width="230" DisplayMemberBinding="{Binding Name}"/>
+                                <GridViewColumn Header="Tên hàng hóa" Width="250" DisplayMemberBinding="{Binding Name}"/>
                                 <GridViewColumn Header="SL" Width="60" DisplayMemberBinding="{Binding Quantity}"/>
                                 <GridViewColumn Header="Đơn giá" Width="110">
                                     <GridViewColumn.CellTemplate>
@@ -100,21 +139,7 @@
                     <Border Grid.Row="1" Padding="15">
                         <StackPanel>
                             <TextBlock Text="Khách hàng" FontSize="12" Foreground="#666666" Margin="0,0,0,5"/>
-                            <Grid Margin="0,0,0,18">
-                                <ComboBox ItemsSource="{Binding Customers}" SelectedItem="{Binding SelectedCustomer}" DisplayMemberPath="Name" Height="38" VerticalContentAlignment="Center" Style="{StaticResource FieldComboBoxStyle}"/>
-                                <TextBlock Text="Chọn khách hàng" Foreground="#999999" IsHitTestVisible="False" Margin="12,0,0,0" VerticalAlignment="Center">
-                                    <TextBlock.Style>
-                                        <Style TargetType="TextBlock">
-                                            <Setter Property="Visibility" Value="Collapsed"/>
-                                            <Style.Triggers>
-                                                <DataTrigger Binding="{Binding SelectedCustomer}" Value="{x:Null}">
-                                                    <Setter Property="Visibility" Value="Visible"/>
-                                                </DataTrigger>
-                                            </Style.Triggers>
-                                        </Style>
-                                    </TextBlock.Style>
-                                </TextBlock>
-                            </Grid>
+                            <ComboBox ItemsSource="{Binding Customers}" SelectedItem="{Binding SelectedCustomer}" DisplayMemberPath="Name" Height="38" VerticalContentAlignment="Center" Margin="0,0,0,18" Style="{StaticResource FieldComboBoxStyle}"/>
 
                             <Grid Margin="0,0,0,10">
                                 <TextBlock Text="Tổng tiền hàng:" Foreground="#666666"/>
@@ -146,8 +171,13 @@
 
                             <TextBlock Text="Khách thanh toán" FontSize="12" Foreground="#666666" Margin="0,0,0,5"/>
                             <TextBox Text="{Binding PaymentText, UpdateSourceTrigger=PropertyChanged}" Height="44" FontSize="16" Foreground="#2E7D32" TextAlignment="Right" VerticalContentAlignment="Center" BorderBrush="#CCCCCC" Margin="0,0,0,12" Tag="Số tiền khách đưa" Style="{StaticResource WatermarkTextBoxStyle}"/>
-                            <TextBlock Text="{Binding StatusMessage}" Foreground="#666666" Margin="0,0,0,12"/>
 
+                            <Grid Margin="0,0,0,10">
+                                <TextBlock Text="Tiền thối:" Foreground="#666666"/>
+                                <TextBlock Text="{Binding Change, StringFormat={}{0:N0} đ}" FontWeight="Bold" HorizontalAlignment="Right"/>
+                            </Grid>
+
+                            <TextBlock Text="{Binding StatusMessage}" Foreground="#666666" Margin="0,0,0,12" TextWrapping="Wrap"/>
                             <Button Command="{Binding CheckoutCommand}" Background="#2E7D32" Foreground="White" Height="45" BorderThickness="0" Content="THANH TOÁN (F9)" FontWeight="Bold" FontSize="16"/>
                         </StackPanel>
                     </Border>

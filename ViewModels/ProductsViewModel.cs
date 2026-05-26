@@ -111,8 +111,7 @@ public sealed class ProductsViewModel : ViewModelBase
 
     private async Task SearchAsync()
     {
-        var categoryId = SelectedCategory?.Id;
-        var products = await _productService.SearchAsync(SearchText, categoryId);
+        var products = await _productService.SearchAsync(SearchText);
         Products.ResetWith(products);
         OnPropertyChanged(nameof(ProductCount));
         StatusMessage = $"Tổng số bản ghi: {ProductCount}";

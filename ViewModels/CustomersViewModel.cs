@@ -1,4 +1,4 @@
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 using quanlybanhang_nmcnpm.Services;
 
 namespace quanlybanhang_nmcnpm.ViewModels;
@@ -12,7 +12,7 @@ public sealed class CustomersViewModel : ViewModelBase
     private string _phone = "";
     private string _email = "";
     private string _address = "";
-    private string _pointsText = "0";
+    private string _pointsText = "";
     private string _statusMessage = "";
 
     public CustomersViewModel(ICustomerService customerService)
@@ -162,7 +162,8 @@ public sealed class CustomersViewModel : ViewModelBase
 
     private CustomerInput? BuildInput()
     {
-        if (!int.TryParse(PointsText, out var points))
+        var points = 0;
+        if (!string.IsNullOrWhiteSpace(PointsText) && !int.TryParse(PointsText, out points))
         {
             StatusMessage = "Điểm tích lũy không hợp lệ.";
             return null;
@@ -192,7 +193,7 @@ public sealed class CustomersViewModel : ViewModelBase
         Phone = "";
         Email = "";
         Address = "";
-        PointsText = "0";
+        PointsText = "";
         StatusMessage = "";
     }
 }

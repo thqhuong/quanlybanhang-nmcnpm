@@ -51,6 +51,7 @@ public sealed record CustomerListItem(
     string Email,
     string Address,
     int Points,
+    decimal TotalPaid,
     DateTime? LastPurchase);
 
 public sealed record OrderLineInput(int ProductId, int Quantity);
@@ -98,9 +99,26 @@ public sealed record InventoryReceiptLineInput(int ProductId, int Quantity, deci
 public sealed record CreateInventoryReceiptInput(
     int SupplierId,
     int EmployeeId,
+    DateTime ReceiptDate,
     string DeliveredBy,
     string Note,
     IReadOnlyCollection<InventoryReceiptLineInput> Lines);
+
+public sealed record InventoryReceiptPrintout(
+    DateTime ReceiptDate,
+    string SupplierName,
+    string DeliveredBy,
+    string Note,
+    decimal Total,
+    IReadOnlyList<InventoryReceiptPrintLine> Lines);
+
+public sealed record InventoryReceiptPrintLine(
+    string ProductCode,
+    string ProductName,
+    string Unit,
+    int Quantity,
+    decimal UnitCost,
+    decimal LineTotal);
 
 public sealed record AccountInput(
     string Username,
@@ -176,6 +194,7 @@ public static class ServiceModelMapping
             .OrderByDescending(o => o.NgayLap)
             .Select(o => (DateTime?)o.NgayLap)
             .FirstOrDefault();
+        var totalPaid = customer.Orders.Sum(order => order.TongTien);
 
         return new CustomerListItem(
             customer.MaKH,
@@ -184,6 +203,7 @@ public static class ServiceModelMapping
             customer.Email,
             customer.DiaChiKH,
             customer.DiemTichLuy,
+            totalPaid,
             lastPurchase);
     }
 

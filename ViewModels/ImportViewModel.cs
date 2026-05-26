@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using System.Globalization;
 using quanlybanhang_nmcnpm.Services;
 
 namespace quanlybanhang_nmcnpm.ViewModels;
@@ -13,8 +14,9 @@ public sealed class ImportViewModel : ViewModelBase
     private CategoryOption? _selectedSupplier;
     private ReceiptLine? _selectedLine;
     private string _productCode = "";
-    private string _quantityText = "1";
-    private string _unitCostText = "0";
+    private string _quantityText = "";
+    private string _unitCostText = "";
+    private string _receiptDateText = DateTime.Today.ToString("dd/MM/yyyy");
     private string _deliveredBy = "";
     private string _note = "";
     private decimal _total;
@@ -33,6 +35,8 @@ public sealed class ImportViewModel : ViewModelBase
         RemoveLineCommand = new RelayCommand(RemoveSelectedLine, () => SelectedLine is not null);
         SaveCommand = new AsyncRelayCommand(SaveAsync, () => Lines.Count > 0);
         NewCommand = new RelayCommand(ClearReceipt);
+        PrintCommand = new RelayCommand(PrintReceipt, () => Lines.Count > 0);
+        OpenReceiptFolderCommand = new RelayCommand(OpenReceiptFolder);
     }
 
     public ObservableCollection<CategoryOption> Suppliers { get; } = new();
@@ -44,6 +48,8 @@ public sealed class ImportViewModel : ViewModelBase
     public RelayCommand RemoveLineCommand { get; }
     public AsyncRelayCommand SaveCommand { get; }
     public RelayCommand NewCommand { get; }
+    public RelayCommand PrintCommand { get; }
+    public RelayCommand OpenReceiptFolderCommand { get; }
 
     public CategoryOption? SelectedSupplier
     {
@@ -79,6 +85,12 @@ public sealed class ImportViewModel : ViewModelBase
     {
         get => _unitCostText;
         set => SetProperty(ref _unitCostText, value);
+    }
+
+    public string ReceiptDateText
+    {
+        get => _receiptDateText;
+        set => SetProperty(ref _receiptDateText, value);
     }
 
     public string DeliveredBy
@@ -140,7 +152,7 @@ public sealed class ImportViewModel : ViewModelBase
         var product = _products.FirstOrDefault(p =>
             p.Code.Equals(code, StringComparison.OrdinalIgnoreCase));
 
-        if (product is null)
+        if (product is null && !string.IsNullOrWhiteSpace(code))
         {
             var searchResult = await _productService.SearchAsync(code);
             product = searchResult.FirstOrDefault(p => p.Code.Equals(code, StringComparison.OrdinalIgnoreCase))
@@ -165,11 +177,12 @@ public sealed class ImportViewModel : ViewModelBase
         }
 
         ProductCode = "";
-        QuantityText = "1";
-        UnitCostText = "0";
+        QuantityText = "";
+        UnitCostText = "";
         StatusMessage = "Đã thêm mặt hàng vào phiếu nhập.";
         RecalculateTotal();
         SaveCommand.RaiseCanExecuteChanged();
+        PrintCommand.RaiseCanExecuteChanged();
     }
 
     private async Task SaveAsync()
@@ -186,9 +199,16 @@ public sealed class ImportViewModel : ViewModelBase
             return;
         }
 
+        if (!TryParseReceiptDate(out var receiptDate))
+        {
+            StatusMessage = "Ngày nhập không hợp lệ. Vui lòng nhập theo định dạng dd/MM/yyyy.";
+            return;
+        }
+
         var result = await _inventoryService.CreateReceiptAsync(new CreateInventoryReceiptInput(
             SelectedSupplier.Id,
             _employeeId,
+            receiptDate,
             DeliveredBy,
             Note,
             Lines.Select(line => new InventoryReceiptLineInput(line.ProductId, line.Quantity, line.UnitCost)).ToList()));
@@ -199,6 +219,48 @@ public sealed class ImportViewModel : ViewModelBase
             ClearReceipt();
             await LoadAsync();
         }
+    }
+
+    private void PrintReceipt()
+    {
+        if (SelectedSupplier is null)
+        {
+            StatusMessage = "Vui lòng chọn nhà cung cấp.";
+            return;
+        }
+
+        if (!TryParseReceiptDate(out var receiptDate))
+        {
+            StatusMessage = "Ngày nhập không hợp lệ. Vui lòng nhập theo định dạng dd/MM/yyyy.";
+            return;
+        }
+
+        try
+        {
+            _inventoryService.Print(new InventoryReceiptPrintout(
+                receiptDate,
+                SelectedSupplier.Name,
+                DeliveredBy,
+                Note,
+                Total,
+                Lines.Select(line => new InventoryReceiptPrintLine(
+                    line.Code,
+                    line.Name,
+                    line.Unit,
+                    line.Quantity,
+                    line.UnitCost,
+                    line.LineTotal)).ToList()));
+            StatusMessage = "Đã gửi phiếu nhập đến máy in hoặc đã hủy hộp thoại in.";
+        }
+        catch (Exception ex)
+        {
+            StatusMessage = $"Không thể in phiếu nhập: {ex.Message}";
+        }
+    }
+
+    private void OpenReceiptFolder()
+    {
+        _inventoryService.OpenReceiptFolder();
     }
 
     private void RemoveSelectedLine()
@@ -212,24 +274,47 @@ public sealed class ImportViewModel : ViewModelBase
         SelectedLine = null;
         RecalculateTotal();
         SaveCommand.RaiseCanExecuteChanged();
+        PrintCommand.RaiseCanExecuteChanged();
     }
 
     private void ClearReceipt()
     {
         Lines.Clear();
         ProductCode = "";
-        QuantityText = "1";
-        UnitCostText = "0";
+        QuantityText = "";
+        UnitCostText = "";
+        ReceiptDateText = DateTime.Today.ToString("dd/MM/yyyy");
         DeliveredBy = "";
         Note = "";
         RecalculateTotal();
         SaveCommand.RaiseCanExecuteChanged();
+        PrintCommand.RaiseCanExecuteChanged();
     }
 
     private void RecalculateTotal()
     {
         Total = Lines.Sum(line => line.LineTotal);
         OnPropertyChanged(nameof(LineCount));
+    }
+
+    private bool TryParseReceiptDate(out DateTime receiptDate)
+    {
+        if (DateTime.TryParseExact(
+                ReceiptDateText.Trim(),
+                "dd/MM/yyyy",
+                CultureInfo.GetCultureInfo("vi-VN"),
+                DateTimeStyles.None,
+                out var parsed))
+        {
+            receiptDate = parsed.Date.Add(DateTime.Now.TimeOfDay);
+            return true;
+        }
+
+        return DateTime.TryParse(
+            ReceiptDateText,
+            CultureInfo.GetCultureInfo("vi-VN"),
+            DateTimeStyles.None,
+            out receiptDate);
     }
 
     private async Task RefreshLowStockAsync()

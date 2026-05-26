@@ -1,3 +1,11 @@
+using System.Diagnostics;
+using System.Globalization;
+using System.IO;
+using System.Text;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Documents;
+using System.Windows.Media;
 using Microsoft.EntityFrameworkCore;
 using quanlybanhang_nmcnpm.Database;
 using quanlybanhang_nmcnpm.Models;
@@ -58,7 +66,7 @@ public sealed class InventoryService : IInventoryService
         {
             MaNhaCungCap = input.SupplierId,
             MaNhanVien = input.EmployeeId,
-            NgayNhapKho = DateTime.Now,
+            NgayNhapKho = input.ReceiptDate,
             NguoiGiao = input.DeliveredBy.Trim(),
             GhiChu = input.Note.Trim(),
             TongTien = total
@@ -79,8 +87,88 @@ public sealed class InventoryService : IInventoryService
 
         _dbContext.InventoryReceipts.Add(receipt);
         await _dbContext.SaveChangesAsync();
+        await ExportReceiptFileAsync(receipt);
 
         return ValidationResult<decimal>.Success(total);
+    }
+
+    public void OpenReceiptFolder()
+    {
+        var folder = GetReceiptFolder();
+        Directory.CreateDirectory(folder);
+        Process.Start(new ProcessStartInfo
+        {
+            FileName = folder,
+            UseShellExecute = true
+        });
+    }
+
+    public void Print(InventoryReceiptPrintout receipt)
+    {
+        var printDialog = new PrintDialog();
+        if (printDialog.ShowDialog() != true)
+        {
+            return;
+        }
+
+        var document = new FlowDocument
+        {
+            FontFamily = new FontFamily("Consolas"),
+            FontSize = 12,
+            PagePadding = new Thickness(40),
+            ColumnWidth = printDialog.PrintableAreaWidth
+        };
+
+        document.Blocks.Add(new Paragraph(new Run("CUA HANG QUAN LY BAN HANG"))
+        {
+            FontWeight = FontWeights.Bold,
+            FontSize = 16,
+            TextAlignment = TextAlignment.Center
+        });
+        document.Blocks.Add(new Paragraph(new Run($"PHIEU NHAP KHO - {receipt.ReceiptDate:dd/MM/yyyy}"))
+        {
+            FontWeight = FontWeights.Bold,
+            TextAlignment = TextAlignment.Center
+        });
+        document.Blocks.Add(new Paragraph(new Run($"Nha cung cap: {receipt.SupplierName}")));
+        document.Blocks.Add(new Paragraph(new Run($"Ben giao: {receipt.DeliveredBy}")));
+
+        var table = new Table();
+        table.Columns.Add(new TableColumn { Width = new GridLength(80) });
+        table.Columns.Add(new TableColumn { Width = new GridLength(180) });
+        table.Columns.Add(new TableColumn { Width = new GridLength(50) });
+        table.Columns.Add(new TableColumn { Width = new GridLength(70) });
+        table.Columns.Add(new TableColumn { Width = new GridLength(100) });
+        table.Columns.Add(new TableColumn { Width = new GridLength(110) });
+
+        var rowGroup = new TableRowGroup();
+        table.RowGroups.Add(rowGroup);
+        rowGroup.Rows.Add(CreatePrintRow("Ma SP", "Ten hang", "DVT", "SL", "Don gia", "Thanh tien", true));
+        foreach (var line in receipt.Lines)
+        {
+            rowGroup.Rows.Add(CreatePrintRow(
+                line.ProductCode,
+                line.ProductName,
+                line.Unit,
+                line.Quantity.ToString(),
+                FormatMoney(line.UnitCost, CultureInfo.GetCultureInfo("vi-VN")),
+                FormatMoney(line.LineTotal, CultureInfo.GetCultureInfo("vi-VN")),
+                false));
+        }
+
+        document.Blocks.Add(table);
+        document.Blocks.Add(new Paragraph(new Run($"Tong tien: {FormatMoney(receipt.Total, CultureInfo.GetCultureInfo("vi-VN"))}"))
+        {
+            FontWeight = FontWeights.Bold,
+            TextAlignment = TextAlignment.Right
+        });
+
+        if (!string.IsNullOrWhiteSpace(receipt.Note))
+        {
+            document.Blocks.Add(new Paragraph(new Run($"Ghi chu: {receipt.Note}")));
+        }
+
+        printDialog.PrintDocument(((IDocumentPaginatorSource)document).DocumentPaginator, "Phieu nhap kho");
     }
 
     private async Task<ValidationResult> ValidateAsync(CreateInventoryReceiptInput input)
@@ -122,5 +210,83 @@ public sealed class InventoryService : IInventoryService
         }
 
         return ValidationResult.Success();
+    }
+
+    private async Task ExportReceiptFileAsync(InventoryReceipt receipt)
+    {
+        var folder = GetReceiptFolder();
+        Directory.CreateDirectory(folder);
+
+        var savedReceipt = await _dbContext.InventoryReceipts
+            .AsNoTracking()
+            .Include(item => item.Category)
+            .Include(item => item.InventoryReceiptDetails)
+            .ThenInclude(detail => detail.Product)
+            .FirstAsync(item => item.MaPhieuNhapKho == receipt.MaPhieuNhapKho);
+
+        var path = Path.Combine(folder, $"PN-{savedReceipt.MaPhieuNhapKho:000000}.txt");
+        await File.WriteAllTextAsync(path, BuildReceiptText(savedReceipt), Encoding.UTF8);
+    }
+
+    private static string BuildReceiptText(InventoryReceipt receipt)
+    {
+        var culture = CultureInfo.GetCultureInfo("vi-VN");
+        var builder = new StringBuilder();
+        builder.AppendLine("CUA HANG QUAN LY BAN HANG");
+        builder.AppendLine($"Phieu nhap: #{receipt.MaPhieuNhapKho:000000}");
+        builder.AppendLine($"Ngay nhap: {receipt.NgayNhapKho:dd/MM/yyyy HH:mm}");
+        builder.AppendLine($"Nha cung cap: {receipt.Category?.TenNCC ?? ""}");
+        builder.AppendLine($"Nguoi giao: {receipt.NguoiGiao}");
+        builder.AppendLine(new string('-', 42));
+
+        foreach (var line in receipt.InventoryReceiptDetails.OrderBy(detail => detail.Product?.MaSanPham))
+        {
+            builder.AppendLine($"{line.Product?.MaSanPham ?? ""} - {line.Product?.TenHang ?? ""}");
+            builder.AppendLine($"  {line.SoLuongNhap} x {FormatMoney(line.DonGiaNhap, culture)} = {FormatMoney(line.ThanhTien, culture)}");
+        }
+
+        builder.AppendLine(new string('-', 42));
+        builder.AppendLine($"Tong tien: {FormatMoney(receipt.TongTien, culture)}");
+        if (!string.IsNullOrWhiteSpace(receipt.GhiChu))
+        {
+            builder.AppendLine($"Ghi chu: {receipt.GhiChu}");
+        }
+
+        return builder.ToString();
+    }
+
+    private static string FormatMoney(decimal value, CultureInfo culture)
+    {
+        return string.Format(culture, "{0:N0} d", value);
+    }
+
+    private static TableRow CreatePrintRow(
+        string productCode,
+        string productName,
+        string unit,
+        string quantity,
+        string unitCost,
+        string lineTotal,
+        bool isHeader)
+    {
+        var row = new TableRow();
+        foreach (var value in new[] { productCode, productName, unit, quantity, unitCost, lineTotal })
+        {
+            row.Cells.Add(new TableCell(new Paragraph(new Run(value)))
+            {
+                FontWeight = isHeader ? FontWeights.Bold : FontWeights.Normal,
+                Padding = new Thickness(2)
+            });
+        }
+
+        return row;
+    }
+
+    private static string GetReceiptFolder()
+    {
+        return Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
+            "QuanLyBanHang",
+            "InventoryReceipts");
     }
 }

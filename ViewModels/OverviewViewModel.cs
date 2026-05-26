@@ -6,6 +6,7 @@ namespace quanlybanhang_nmcnpm.ViewModels;
 public sealed class OverviewViewModel : ViewModelBase
 {
     private readonly IOverviewService _overviewService;
+    private string _selectedDateRange = "Hôm nay";
     private string _fromDateText = DateTime.Today.ToString("dd/MM/yyyy");
     private string _toDateText = DateTime.Today.ToString("dd/MM/yyyy");
     private decimal _revenue;
@@ -20,17 +21,28 @@ public sealed class OverviewViewModel : ViewModelBase
         _overviewService = overviewService;
         LoadCommand = new AsyncRelayCommand(LoadAsync);
         GenerateReportCommand = new AsyncRelayCommand(LoadAsync);
-        TodayCommand = new RelayCommand(UseToday);
-        ThisMonthCommand = new RelayCommand(UseThisMonth);
+        DateRangeOptions.ResetWith(new[] { "Hôm nay", "Tuần này", "Tháng này" });
     }
 
+    public ObservableCollection<string> DateRangeOptions { get; } = new();
     public ObservableCollection<TopProductReportItem> TopProducts { get; } = new();
     public ObservableCollection<LowStockReportItem> LowStockItems { get; } = new();
 
     public AsyncRelayCommand LoadCommand { get; }
     public AsyncRelayCommand GenerateReportCommand { get; }
-    public RelayCommand TodayCommand { get; }
-    public RelayCommand ThisMonthCommand { get; }
+
+    public string SelectedDateRange
+    {
+        get => _selectedDateRange;
+        set
+        {
+            if (SetProperty(ref _selectedDateRange, value))
+            {
+                ApplySelectedDateRange();
+                GenerateReportCommand.Execute(null);
+            }
+        }
+    }
 
     public string FromDateText
     {
@@ -101,19 +113,24 @@ public sealed class OverviewViewModel : ViewModelBase
             : $"Đã cập nhật báo cáo lúc {DateTime.Now:HH:mm:ss}.";
     }
 
-    private void UseToday()
-    {
-        FromDateText = DateTime.Today.ToString("dd/MM/yyyy");
-        ToDateText = DateTime.Today.ToString("dd/MM/yyyy");
-        GenerateReportCommand.Execute(null);
-    }
-
-    private void UseThisMonth()
+    private void ApplySelectedDateRange()
     {
         var today = DateTime.Today;
-        FromDateText = new DateTime(today.Year, today.Month, 1).ToString("dd/MM/yyyy");
-        ToDateText = today.ToString("dd/MM/yyyy");
-        GenerateReportCommand.Execute(null);
+        var from = today;
+        var to = today;
+
+        if (SelectedDateRange == "Tuần này")
+        {
+            var daysFromMonday = ((int)today.DayOfWeek + 6) % 7;
+            from = today.AddDays(-daysFromMonday);
+        }
+        else if (SelectedDateRange == "Tháng này")
+        {
+            from = new DateTime(today.Year, today.Month, 1);
+        }
+
+        FromDateText = from.ToString("dd/MM/yyyy");
+        ToDateText = to.ToString("dd/MM/yyyy");
     }
 
     private static bool TryParseDate(string value, out DateTime date)
