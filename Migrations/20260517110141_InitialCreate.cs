@@ -196,6 +196,71 @@ namespace quanlybanhang_nmcnpm.Migrations
                         onDelete: ReferentialAction.Restrict);
                 });
 
+            migrationBuilder.InsertData(
+                table: "Categories",
+                columns: new[] { "MaNhaCungCap", "TenNCC" },
+                values: new object[,]
+                {
+                    { 1, "Nha Cung Cap A" },
+                    { 2, "Nha Cung Cap B" }
+                });
+
+            migrationBuilder.InsertData(
+                table: "Roles",
+                columns: new[] { "MaVaiTro", "TenVaiTro" },
+                values: new object[,]
+                {
+                    { 1, "Admin" },
+                    { 2, "NhanVien" }
+                });
+
+            migrationBuilder.InsertData(
+                table: "Customers",
+                columns: new[] { "MaKH", "DiaChiKH", "Email", "NgayDangKy", "NgaySinh", "SoDienThoai", "TenKH" },
+                values: new object[,]
+                {
+                    { 1, "12 Le Loi, Da Nang", "kh.b@example.com", new DateTime(2024, 1, 10, 0, 0, 0, 0, DateTimeKind.Unspecified), new DateTime(1995, 8, 10, 0, 0, 0, 0, DateTimeKind.Unspecified), "0900000002", "Tran Thi B" },
+                    { 2, "99 Tran Hung Dao, Ho Chi Minh", "kh.c@example.com", new DateTime(2024, 2, 2, 0, 0, 0, 0, DateTimeKind.Unspecified), new DateTime(1988, 3, 15, 0, 0, 0, 0, DateTimeKind.Unspecified), "0900000003", "Pham Van C" }
+                });
+
+            migrationBuilder.InsertData(
+                table: "Products",
+                columns: new[] { "MaHang", "MaLoai", "MaNhaCungCap", "SoLuongTon", "TenHang" },
+                values: new object[,]
+                {
+                    { 1, "PC", 1, 50, "Ban Phim Co" },
+                    { 2, "ACC", 2, 40, "Chuot Khong Day" }
+                });
+
+            migrationBuilder.InsertData(
+                table: "Users",
+                columns: new[] { "MaNhanVien", "DiaChiKH", "Email", "MaKH", "MaVaiTro", "NgayDangKy", "NgaySinh", "SoDienThoai", "TenKH", "TenNV" },
+                values: new object[] { 1, "1 Nguyen Trai, Ha Noi", "nv.a@example.com", 1, 1, new DateTime(2024, 1, 5, 0, 0, 0, 0, DateTimeKind.Unspecified), new DateTime(1990, 5, 20, 0, 0, 0, 0, DateTimeKind.Unspecified), "0900000001", "Nguyen Van A", "Nguyen Van A" });
+
+            migrationBuilder.InsertData(
+                table: "Orders",
+                columns: new[] { "MaDonHang", "MaKH", "MaNhanVien", "NgayLap", "TongTien" },
+                values: new object[] { 1, 1, 1, new DateTime(2024, 2, 5, 0, 0, 0, 0, DateTimeKind.Unspecified), 1500000m });
+
+            migrationBuilder.InsertData(
+                table: "InventoryReceipts",
+                columns: new[] { "MaPhieuNhapKho", "MaNhaCungCap", "MaNhanVien", "NgayNhapKho", "TongTien" },
+                values: new object[] { 1, 1, 1, new DateTime(2024, 1, 15, 0, 0, 0, 0, DateTimeKind.Unspecified), 900000 });
+
+            migrationBuilder.InsertData(
+                table: "OrderDetails",
+                columns: new[] { "MaDonHang", "MaHang", "DonGiaBan", "SoLuong", "ThanhTien" },
+                values: new object[,]
+                {
+                    { 1, 1, 1000000, 1, 1000000 },
+                    { 1, 2, 500000, 1, 500000 }
+                });
+
+            migrationBuilder.InsertData(
+                table: "InventoryReceiptDetails",
+                columns: new[] { "MaPhieuNhapKho", "MaHang", "DonGiaNhap", "SoLuongNhap", "ThanhTien" },
+                values: new object[] { 1, 1, 90000, 10, 900000 });
+
             migrationBuilder.CreateIndex(
                 name: "IX_InventoryReceiptDetails_MaHang",
                 table: "InventoryReceiptDetails",

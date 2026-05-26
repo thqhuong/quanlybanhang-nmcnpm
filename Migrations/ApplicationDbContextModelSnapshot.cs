@@ -36,6 +36,18 @@ namespace quanlybanhang_nmcnpm.Migrations
 
                     b.HasKey("MaNhaCungCap");
 
+                    b.HasData(
+                        new
+                        {
+                            MaNhaCungCap = 1,
+                            TenNCC = "Nha Cung Cap A"
+                        },
+                        new
+                        {
+                            MaNhaCungCap = 2,
+                            TenNCC = "Nha Cung Cap B"
+                        });
+
                     b.ToTable("Categories");
                 });
 
@@ -75,8 +87,27 @@ namespace quanlybanhang_nmcnpm.Migrations
 
                     b.HasKey("MaKH");
 
-                    b.HasIndex("SoDienThoai")
-                        .IsUnique();
+                    b.HasData(
+                        new
+                        {
+                            MaKH = 1,
+                            DiaChiKH = "12 Le Loi, Da Nang",
+                            Email = "kh.b@example.com",
+                            NgayDangKy = new DateTime(2024, 1, 10, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            NgaySinh = new DateTime(1995, 8, 10, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            SoDienThoai = "0900000002",
+                            TenKH = "Tran Thi B"
+                        },
+                        new
+                        {
+                            MaKH = 2,
+                            DiaChiKH = "99 Tran Hung Dao, Ho Chi Minh",
+                            Email = "kh.c@example.com",
+                            NgayDangKy = new DateTime(2024, 2, 2, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            NgaySinh = new DateTime(1988, 3, 15, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            SoDienThoai = "0900000003",
+                            TenKH = "Pham Van C"
+                        });
 
                     b.ToTable("Customers");
                 });
@@ -112,7 +143,15 @@ namespace quanlybanhang_nmcnpm.Migrations
 
                     b.HasKey("MaPhieuNhapKho");
 
-                    b.HasIndex("MaNhaCungCap");
+                    b.HasData(
+                        new
+                        {
+                            MaPhieuNhapKho = 1,
+                            MaNhaCungCap = 1,
+                            MaNhanVien = 1,
+                            NgayNhapKho = new DateTime(2024, 1, 15, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            TongTien = 900000
+                        });
 
                     b.ToTable("InventoryReceipts");
                 });
@@ -139,6 +178,16 @@ namespace quanlybanhang_nmcnpm.Migrations
                     b.HasKey("MaPhieuNhapKho", "MaHang");
 
                     b.HasIndex("MaHang");
+
+                    b.HasData(
+                        new
+                        {
+                            MaPhieuNhapKho = 1,
+                            MaHang = 1,
+                            DonGiaNhap = 90000,
+                            SoLuongNhap = 10,
+                            ThanhTien = 900000
+                        });
 
                     b.ToTable("InventoryReceiptDetails");
                 });
@@ -184,6 +233,16 @@ namespace quanlybanhang_nmcnpm.Migrations
 
                     b.HasIndex("MaKH");
 
+                    b.HasData(
+                        new
+                        {
+                            MaDonHang = 1,
+                            MaKH = 1,
+                            MaNhanVien = 1,
+                            NgayLap = new DateTime(2024, 2, 5, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            TongTien = 1500000m
+                        });
+
                     b.ToTable("Orders");
                 });
 
@@ -209,6 +268,24 @@ namespace quanlybanhang_nmcnpm.Migrations
                     b.HasKey("MaDonHang", "MaHang");
 
                     b.HasIndex("MaHang");
+
+                    b.HasData(
+                        new
+                        {
+                            MaDonHang = 1,
+                            MaHang = 1,
+                            DonGiaBan = 1000000,
+                            SoLuong = 1,
+                            ThanhTien = 1000000
+                        },
+                        new
+                        {
+                            MaDonHang = 1,
+                            MaHang = 2,
+                            DonGiaBan = 500000,
+                            SoLuong = 1,
+                            ThanhTien = 500000
+                        });
 
                     b.ToTable("OrderDetails");
                 });
@@ -253,11 +330,23 @@ namespace quanlybanhang_nmcnpm.Migrations
 
                     b.HasIndex("MaNhaCungCap");
 
-                    b.HasIndex("MaSanPham")
-                        .IsUnique();
-
-                    b.HasIndex("TenHang")
-                        .IsUnique();
+                    b.HasData(
+                        new
+                        {
+                            MaHang = 1,
+                            MaLoai = "PC",
+                            MaNhaCungCap = 1,
+                            SoLuongTon = 50,
+                            TenHang = "Ban Phim Co"
+                        },
+                        new
+                        {
+                            MaHang = 2,
+                            MaLoai = "ACC",
+                            MaNhaCungCap = 2,
+                            SoLuongTon = 40,
+                            TenHang = "Chuot Khong Day"
+                        });
 
                     b.ToTable("Products");
                 });
@@ -275,6 +364,18 @@ namespace quanlybanhang_nmcnpm.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("MaVaiTro");
+
+                    b.HasData(
+                        new
+                        {
+                            MaVaiTro = 1,
+                            TenVaiTro = "Admin"
+                        },
+                        new
+                        {
+                            MaVaiTro = 2,
+                            TenVaiTro = "NhanVien"
+                        });
 
                     b.ToTable("Roles");
                 });
@@ -323,8 +424,20 @@ namespace quanlybanhang_nmcnpm.Migrations
 
                     b.HasIndex("MaVaiTro");
 
-                    b.HasIndex("TenDangNhap")
-                        .IsUnique();
+                    b.HasData(
+                        new
+                        {
+                            MaNhanVien = 1,
+                            DiaChiKH = "1 Nguyen Trai, Ha Noi",
+                            Email = "nv.a@example.com",
+                            MaKH = 1,
+                            MaVaiTro = 1,
+                            NgayDangKy = new DateTime(2024, 1, 5, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            NgaySinh = new DateTime(1990, 5, 20, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            SoDienThoai = "0900000001",
+                            TenKH = "Nguyen Van A",
+                            TenNV = "Nguyen Van A"
+                        });
 
                     b.ToTable("Users");
                 });
