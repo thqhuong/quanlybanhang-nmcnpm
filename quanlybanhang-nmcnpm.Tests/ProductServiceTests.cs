@@ -59,6 +59,6 @@ public sealed class ProductServiceTests
 
         var delete = await service.DeleteAsync(create.Value.Id);
         Assert.True(delete.IsValid, delete.ErrorMessage);
-        Assert.False(await dbContext.Products.AnyAsync(p => p.MaSanPham == "SP999"));
+        Assert.False(await dbContext.Products.AnyAsync(product => product.MaSanPham == "SP999"));
     }
 }

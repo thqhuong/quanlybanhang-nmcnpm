@@ -18,7 +18,6 @@
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
                 <Button Content="&#xE8A5; Tạo mới" Command="{Binding NewCommand}" FontFamily="Segoe UI, Segoe MDL2 Assets" Background="White" BorderBrush="#CCCCCC" Height="30" Padding="10,0" Margin="0,0,8,0"/>
                 <Button Content="&#xE74E; Lưu phiếu" Command="{Binding SaveCommand}" FontFamily="Segoe UI, Segoe MDL2 Assets" Background="#E8F5E9" BorderBrush="#81C784" Height="30" Padding="10,0" Margin="0,0,8,0" Foreground="#2E7D32" FontWeight="Bold"/>
-                <Button Content="&#xE749; In" FontFamily="Segoe UI, Segoe MDL2 Assets" Background="White" BorderBrush="#CCCCCC" Height="30" Padding="10,0"/>
             </StackPanel>
         </Grid>
 
@@ -60,7 +59,7 @@
             <Border Grid.Column="1" BorderBrush="#E0E0E0" BorderThickness="1" Padding="15">
                 <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
                     <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE783;" FontSize="40" Foreground="#B0BEC5" HorizontalAlignment="Center" Margin="0,0,0,10"/>
-                    <TextBlock Text="TỔNG TIỀN THANH TOÁN" FontWeight="Bold" Foreground="#546E7A" HorizontalAlignment="Center"/>
+                    <TextBlock Text="TỔNG TIỀN NHẬP" FontWeight="Bold" Foreground="#546E7A" HorizontalAlignment="Center"/>
                     <TextBlock Text="{Binding Total, StringFormat={}{0:N0} đ}" FontSize="28" FontWeight="Bold" Foreground="#D32F2F" HorizontalAlignment="Center" Margin="0,10,0,0"/>
                 </StackPanel>
             </Border>
@@ -83,8 +82,8 @@
                             <ColumnDefinition Width="100"/>
                         </Grid.ColumnDefinitions>
                         <TextBox Grid.Column="0" Text="{Binding ProductCode, UpdateSourceTrigger=PropertyChanged}" Height="30" VerticalContentAlignment="Center" Margin="0,0,8,0" Padding="5,0" ToolTip="Mã sản phẩm"/>
-                        <TextBox Grid.Column="1" Text="{Binding QuantityText, UpdateSourceTrigger=PropertyChanged}" Height="30" TextAlignment="Center" VerticalContentAlignment="Center" Margin="0,0,8,0"/>
-                        <TextBox Grid.Column="2" Text="{Binding UnitCostText, UpdateSourceTrigger=PropertyChanged}" Height="30" TextAlignment="Right" VerticalContentAlignment="Center" Margin="0,0,8,0"/>
+                        <TextBox Grid.Column="1" Text="{Binding QuantityText, UpdateSourceTrigger=PropertyChanged}" Height="30" TextAlignment="Center" VerticalContentAlignment="Center" Margin="0,0,8,0" ToolTip="Số lượng"/>
+                        <TextBox Grid.Column="2" Text="{Binding UnitCostText, UpdateSourceTrigger=PropertyChanged}" Height="30" TextAlignment="Right" VerticalContentAlignment="Center" Margin="0,0,8,0" ToolTip="Đơn giá nhập"/>
                         <Button Grid.Column="3" Command="{Binding AddLineCommand}" Background="#0078D7" Foreground="White" BorderThickness="0" Height="30" Content="Thêm"/>
                         <Button Grid.Column="4" Command="{Binding RemoveLineCommand}" Background="#C62828" Foreground="White" BorderThickness="0" Height="30" Margin="8,0,0,0" Content="Xóa dòng"/>
                     </Grid>

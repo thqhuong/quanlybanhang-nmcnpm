@@ -16,18 +16,18 @@ public sealed class AccountService : IAccountService
     public async Task<IReadOnlyList<AccountListItem>> GetAllAsync()
     {
         var users = await _dbContext.Users
-            .Include(u => u.Role)
-            .OrderBy(u => u.TenDangNhap)
+            .Include(user => user.Role)
+            .OrderBy(user => user.TenDangNhap)
             .ToListAsync();
 
-        return users.Select(u => u.ToListItem()).ToList();
+        return users.Select(user => user.ToListItem()).ToList();
     }
 
     public async Task<IReadOnlyList<CategoryOption>> GetRolesAsync()
     {
         return await _dbContext.Roles
-            .OrderBy(r => r.TenVaiTro)
-            .Select(r => new CategoryOption(r.MaVaiTro, r.TenVaiTro))
+            .OrderBy(role => role.TenVaiTro)
+            .Select(role => new CategoryOption(role.MaVaiTro, role.TenVaiTro))
             .ToListAsync();
     }
 
@@ -39,9 +39,8 @@ public sealed class AccountService : IAccountService
             return ValidationResult<AccountListItem>.Failure(validation.ErrorMessage!);
         }
 
-        var user = new User();
+        var user = new User { NgayDangKy = DateTime.Today };
         ApplyInput(user, input);
-        user.NgayDangKy = DateTime.Today;
         _dbContext.Users.Add(user);
         await _dbContext.SaveChangesAsync();
         await _dbContext.Entry(user).Reference(u => u.Role).LoadAsync();
@@ -86,25 +85,44 @@ public sealed class AccountService : IAccountService
 
     private async Task<ValidationResult> ValidateAsync(AccountInput input, int? existingId = null)
     {
-        if (string.IsNullOrWhiteSpace(input.Username))
+        var username = input.Username.Trim().ToLowerInvariant();
+        var fullName = input.FullName.Trim();
+        var phone = input.Phone.Trim();
+        var email = input.Email.Trim();
+
+        if (string.IsNullOrWhiteSpace(username))
         {
             return ValidationResult.Failure("Tên đăng nhập là bắt buộc.");
         }
 
-        if (string.IsNullOrWhiteSpace(input.FullName))
+        if (username.Length < 3 || username.Any(ch => !char.IsLetterOrDigit(ch) && ch != '_' && ch != '.'))
+        {
+            return ValidationResult.Failure("Tên đăng nhập phải có ít nhất 3 ký tự và chỉ gồm chữ, số, dấu chấm hoặc gạch dưới.");
+        }
+
+        if (string.IsNullOrWhiteSpace(fullName))
         {
             return ValidationResult.Failure("Họ tên là bắt buộc.");
         }
 
-        if (!await _dbContext.Roles.AnyAsync(r => r.MaVaiTro == input.RoleId))
+        if (!string.IsNullOrWhiteSpace(phone) && (phone.Length < 8 || phone.Any(ch => !char.IsDigit(ch))))
+        {
+            return ValidationResult.Failure("Số điện thoại không hợp lệ.");
+        }
+
+        if (!string.IsNullOrWhiteSpace(email) && !email.Contains('@'))
+        {
+            return ValidationResult.Failure("Email không hợp lệ.");
+        }
+
+        if (!await _dbContext.Roles.AnyAsync(role => role.MaVaiTro == input.RoleId))
         {
             return ValidationResult.Failure("Vai trò không hợp lệ.");
         }
 
-        var username = input.Username.Trim().ToLowerInvariant();
-        var duplicateUsername = await _dbContext.Users.AnyAsync(u =>
-            u.TenDangNhap.ToLower() == username &&
-            (!existingId.HasValue || u.MaNhanVien != existingId.Value));
+        var duplicateUsername = await _dbContext.Users.AnyAsync(user =>
+            user.TenDangNhap.ToLower() == username &&
+            (!existingId.HasValue || user.MaNhanVien != existingId.Value));
         if (duplicateUsername)
         {
             return ValidationResult.Failure("Tên đăng nhập đã tồn tại.");

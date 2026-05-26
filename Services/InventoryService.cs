@@ -16,8 +16,8 @@ public sealed class InventoryService : IInventoryService
     public async Task<IReadOnlyList<CategoryOption>> GetSuppliersAsync()
     {
         return await _dbContext.Categories
-            .OrderBy(c => c.TenNCC)
-            .Select(c => new CategoryOption(c.MaNhaCungCap, c.TenNCC))
+            .OrderBy(category => category.TenNCC)
+            .Select(category => new CategoryOption(category.MaNhaCungCap, category.TenNCC))
             .ToListAsync();
     }
 
@@ -29,10 +29,10 @@ public sealed class InventoryService : IInventoryService
             return ValidationResult<decimal>.Failure(validation.ErrorMessage!);
         }
 
-        var productIds = input.Lines.Select(l => l.ProductId).Distinct().ToList();
+        var productIds = input.Lines.Select(line => line.ProductId).Distinct().ToList();
         var products = await _dbContext.Products
-            .Where(p => productIds.Contains(p.MaHang))
-            .ToDictionaryAsync(p => p.MaHang);
+            .Where(product => productIds.Contains(product.MaHang))
+            .ToDictionaryAsync(product => product.MaHang);
 
         var total = input.Lines.Sum(line => line.Quantity * line.UnitCost);
         var receipt = new InventoryReceipt
@@ -66,12 +66,12 @@ public sealed class InventoryService : IInventoryService
 
     private async Task<ValidationResult> ValidateAsync(CreateInventoryReceiptInput input)
     {
-        if (!await _dbContext.Categories.AnyAsync(c => c.MaNhaCungCap == input.SupplierId))
+        if (!await _dbContext.Categories.AnyAsync(category => category.MaNhaCungCap == input.SupplierId))
         {
             return ValidationResult.Failure("Nhà cung cấp không hợp lệ.");
         }
 
-        if (!await _dbContext.Users.AnyAsync(u => u.MaNhanVien == input.EmployeeId && u.IsActive))
+        if (!await _dbContext.Users.AnyAsync(user => user.MaNhanVien == input.EmployeeId && user.IsActive))
         {
             return ValidationResult.Failure("Nhân viên không hợp lệ.");
         }
@@ -82,8 +82,8 @@ public sealed class InventoryService : IInventoryService
         }
 
         var duplicateProduct = input.Lines
-            .GroupBy(l => l.ProductId)
-            .Any(g => g.Count() > 1);
+            .GroupBy(line => line.ProductId)
+            .Any(group => group.Count() > 1);
         if (duplicateProduct)
         {
             return ValidationResult.Failure("Mỗi sản phẩm chỉ nên xuất hiện một lần trong phiếu nhập.");
@@ -101,7 +101,7 @@ public sealed class InventoryService : IInventoryService
                 return ValidationResult.Failure("Đơn giá nhập không được âm.");
             }
 
-            if (!await _dbContext.Products.AnyAsync(p => p.MaHang == line.ProductId))
+            if (!await _dbContext.Products.AnyAsync(product => product.MaHang == line.ProductId))
             {
                 return ValidationResult.Failure("Sản phẩm không hợp lệ.");
             }

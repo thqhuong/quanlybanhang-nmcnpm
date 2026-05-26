@@ -143,7 +143,9 @@ public sealed class AccountsViewModel : ViewModelBase
         }
 
         var result = await _accountService.SetActiveAsync(SelectedAccount.Id, !SelectedAccount.IsActive);
-        StatusMessage = result.IsValid ? "Đã đổi trạng thái tài khoản." : result.ErrorMessage ?? "";
+        StatusMessage = result.IsValid
+            ? (SelectedAccount.IsActive ? "Đã khóa tài khoản." : "Đã mở khóa tài khoản.")
+            : result.ErrorMessage ?? "";
         if (result.IsValid)
         {
             await LoadAsync();
@@ -173,7 +175,7 @@ public sealed class AccountsViewModel : ViewModelBase
         Phone = account.Phone;
         Email = account.Email;
         IsActive = account.IsActive;
-        SelectedRole = Roles.FirstOrDefault(r => r.Name == account.Role) ?? SelectedRole;
+        SelectedRole = Roles.FirstOrDefault(role => role.Name == account.Role) ?? SelectedRole;
     }
 
     private void ClearForm()

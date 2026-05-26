@@ -140,16 +140,16 @@ public static class DatabaseSeeder
     private static Task<int> GetRoleIdAsync(ApplicationDbContext dbContext, string roleName)
     {
         return dbContext.Roles
-            .Where(r => r.TenVaiTro == roleName)
-            .Select(r => r.MaVaiTro)
+            .Where(role => role.TenVaiTro == roleName)
+            .Select(role => role.MaVaiTro)
             .FirstAsync();
     }
 
     private static Task<int> GetCategoryIdAsync(ApplicationDbContext dbContext, string categoryName)
     {
         return dbContext.Categories
-            .Where(c => c.TenNCC == categoryName)
-            .Select(c => c.MaNhaCungCap)
+            .Where(category => category.TenNCC == categoryName)
+            .Select(category => category.MaNhaCungCap)
             .FirstAsync();
     }
 }

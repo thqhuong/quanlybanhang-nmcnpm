@@ -114,8 +114,8 @@ public sealed class ImportViewModel : ViewModelBase
         SelectedSupplier ??= Suppliers.FirstOrDefault();
 
         var accounts = await _accountService.GetAllAsync();
-        _employeeId = accounts.FirstOrDefault(a => a.Role == "Storekeeper" && a.IsActive)?.Id
-            ?? accounts.FirstOrDefault(a => a.IsActive)?.Id
+        _employeeId = accounts.FirstOrDefault(account => account.Role == "Storekeeper" && account.IsActive)?.Id
+            ?? accounts.FirstOrDefault(account => account.IsActive)?.Id
             ?? 0;
     }
 

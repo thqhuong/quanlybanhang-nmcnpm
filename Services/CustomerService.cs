@@ -16,10 +16,10 @@ public sealed class CustomerService : ICustomerService
     public async Task<IReadOnlyList<CustomerListItem>> GetAllAsync()
     {
         var customers = await CustomerQuery()
-            .OrderBy(c => c.TenKH)
+            .OrderBy(customer => customer.TenKH)
             .ToListAsync();
 
-        return customers.Select(c => c.ToListItem()).ToList();
+        return customers.Select(customer => customer.ToListItem()).ToList();
     }
 
     public async Task<IReadOnlyList<CustomerListItem>> SearchAsync(string? searchText)
@@ -29,16 +29,16 @@ public sealed class CustomerService : ICustomerService
 
         if (!string.IsNullOrWhiteSpace(normalized))
         {
-            query = query.Where(c =>
-                c.TenKH.ToLower().Contains(normalized) ||
-                c.SoDienThoai.ToLower().Contains(normalized));
+            query = query.Where(customer =>
+                customer.TenKH.ToLower().Contains(normalized) ||
+                customer.SoDienThoai.ToLower().Contains(normalized));
         }
 
         var customers = await query
-            .OrderBy(c => c.TenKH)
+            .OrderBy(customer => customer.TenKH)
             .ToListAsync();
 
-        return customers.Select(c => c.ToListItem()).ToList();
+        return customers.Select(customer => customer.ToListItem()).ToList();
     }
 
     public async Task<ValidationResult<CustomerListItem>> CreateAsync(CustomerInput input)
@@ -85,7 +85,7 @@ public sealed class CustomerService : ICustomerService
             return ValidationResult.Failure("Không tìm thấy khách hàng.");
         }
 
-        if (await _dbContext.Orders.AnyAsync(o => o.MaKH == id))
+        if (await _dbContext.Orders.AnyAsync(order => order.MaKH == id))
         {
             return ValidationResult.Failure("Khách hàng đã có đơn hàng nên không thể xóa.");
         }
@@ -97,7 +97,7 @@ public sealed class CustomerService : ICustomerService
 
     private IQueryable<Customer> CustomerQuery()
     {
-        return _dbContext.Customers.Include(c => c.Orders);
+        return _dbContext.Customers.Include(customer => customer.Orders);
     }
 
     private async Task<ValidationResult> ValidateAsync(CustomerInput input, int? existingId = null)
@@ -128,9 +128,9 @@ public sealed class CustomerService : ICustomerService
             return ValidationResult.Failure("Điểm tích lũy không được âm.");
         }
 
-        var duplicatePhone = await _dbContext.Customers.AnyAsync(c =>
-            c.SoDienThoai == phone &&
-            (!existingId.HasValue || c.MaKH != existingId.Value));
+        var duplicatePhone = await _dbContext.Customers.AnyAsync(customer =>
+            customer.SoDienThoai == phone &&
+            (!existingId.HasValue || customer.MaKH != existingId.Value));
         if (duplicatePhone)
         {
             return ValidationResult.Failure("Số điện thoại đã tồn tại.");

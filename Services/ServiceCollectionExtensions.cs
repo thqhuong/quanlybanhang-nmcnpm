@@ -12,6 +12,7 @@ public static class ServiceCollectionExtensions
         services.AddTransient<IInventoryService, InventoryService>();
         services.AddTransient<IAccountService, AccountService>();
         services.AddTransient<IOverviewService, OverviewService>();
+        services.AddTransient<IReceiptService, ReceiptService>();
 
         return services;
     }

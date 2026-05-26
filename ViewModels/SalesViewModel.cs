@@ -9,6 +9,7 @@ public sealed class SalesViewModel : ViewModelBase
     private readonly ICustomerService _customerService;
     private readonly IAccountService _accountService;
     private readonly IOrderService _orderService;
+    private readonly IReceiptService _receiptService;
     private readonly List<ProductListItem> _products = new();
     private int _employeeId;
     private string _productCode = "";
@@ -20,23 +21,29 @@ public sealed class SalesViewModel : ViewModelBase
     private decimal _subtotal;
     private decimal _vat;
     private decimal _total;
+    private decimal _change;
     private string _statusMessage = "";
+    private OrderReceipt? _lastReceipt;
 
     public SalesViewModel(
         IProductService productService,
         ICustomerService customerService,
         IAccountService accountService,
-        IOrderService orderService)
+        IOrderService orderService,
+        IReceiptService receiptService)
     {
         _productService = productService;
         _customerService = customerService;
         _accountService = accountService;
         _orderService = orderService;
+        _receiptService = receiptService;
         LoadCommand = new AsyncRelayCommand(LoadAsync);
         AddProductCommand = new AsyncRelayCommand(AddProductAsync);
         RemoveLineCommand = new RelayCommand(RemoveSelectedLine, () => SelectedCartLine is not null);
         CheckoutCommand = new AsyncRelayCommand(CheckoutAsync, () => CartLines.Count > 0);
         NewOrderCommand = new RelayCommand(ClearOrder);
+        ExportReceiptCommand = new AsyncRelayCommand(ExportReceiptAsync, () => LastReceipt is not null);
+        PrintReceiptCommand = new RelayCommand(PrintReceipt, () => LastReceipt is not null);
     }
 
     public ObservableCollection<CustomerListItem> Customers { get; } = new();
@@ -47,6 +54,8 @@ public sealed class SalesViewModel : ViewModelBase
     public RelayCommand RemoveLineCommand { get; }
     public AsyncRelayCommand CheckoutCommand { get; }
     public RelayCommand NewOrderCommand { get; }
+    public AsyncRelayCommand ExportReceiptCommand { get; }
+    public RelayCommand PrintReceiptCommand { get; }
 
     public string ProductCode
     {
@@ -93,7 +102,13 @@ public sealed class SalesViewModel : ViewModelBase
     public string PaymentText
     {
         get => _paymentText;
-        set => SetProperty(ref _paymentText, value);
+        set
+        {
+            if (SetProperty(ref _paymentText, value))
+            {
+                UpdateChange();
+            }
+        }
     }
 
     public decimal Subtotal
@@ -114,10 +129,29 @@ public sealed class SalesViewModel : ViewModelBase
         private set => SetProperty(ref _total, value);
     }
 
+    public decimal Change
+    {
+        get => _change;
+        private set => SetProperty(ref _change, value);
+    }
+
     public string StatusMessage
     {
         get => _statusMessage;
         set => SetProperty(ref _statusMessage, value);
+    }
+
+    public OrderReceipt? LastReceipt
+    {
+        get => _lastReceipt;
+        private set
+        {
+            if (SetProperty(ref _lastReceipt, value))
+            {
+                ExportReceiptCommand.RaiseCanExecuteChanged();
+                PrintReceiptCommand.RaiseCanExecuteChanged();
+            }
+        }
     }
 
     private async Task LoadAsync()
@@ -125,11 +159,12 @@ public sealed class SalesViewModel : ViewModelBase
         _products.Clear();
         _products.AddRange(await _productService.GetAllAsync());
         Customers.ResetWith(await _customerService.GetAllAsync());
-        SelectedCustomer = Customers.FirstOrDefault(c => c.Name == "Khách lẻ") ?? Customers.FirstOrDefault();
+        SelectedCustomer = Customers.FirstOrDefault(customer => customer.Name == "Khách lẻ")
+            ?? Customers.FirstOrDefault();
 
         var accounts = await _accountService.GetAllAsync();
-        _employeeId = accounts.FirstOrDefault(a => a.Role == "Cashier" && a.IsActive)?.Id
-            ?? accounts.FirstOrDefault(a => a.IsActive)?.Id
+        _employeeId = accounts.FirstOrDefault(account => account.Role == "Cashier" && account.IsActive)?.Id
+            ?? accounts.FirstOrDefault(account => account.IsActive)?.Id
             ?? 0;
     }
 
@@ -178,6 +213,7 @@ public sealed class SalesViewModel : ViewModelBase
         ProductCode = "";
         QuantityText = "1";
         StatusMessage = "Đã thêm sản phẩm vào giỏ.";
+        LastReceipt = null;
         RecalculateTotals();
         CheckoutCommand.RaiseCanExecuteChanged();
     }
@@ -196,22 +232,60 @@ public sealed class SalesViewModel : ViewModelBase
             return;
         }
 
+        var paidAmount = ParseMoney(PaymentText);
+        if (paidAmount < Total)
+        {
+            StatusMessage = "Số tiền khách thanh toán chưa đủ.";
+            return;
+        }
+
         var discount = ParseMoney(DiscountText);
         var result = await _orderService.CreateOrderAsync(new CreateOrderInput(
             SelectedCustomer.Id,
             _employeeId,
             discount,
             8m,
+            paidAmount,
             CartLines.Select(line => new OrderLineInput(line.ProductId, line.Quantity)).ToList()));
 
-        StatusMessage = result.IsValid
-            ? $"Đã thanh toán đơn #{result.Value!.OrderId}."
-            : result.ErrorMessage ?? "";
-
-        if (result.IsValid)
+        if (!result.IsValid)
         {
-            ClearOrder();
-            await LoadAsync();
+            StatusMessage = result.ErrorMessage ?? "";
+            return;
+        }
+
+        LastReceipt = await _orderService.GetReceiptAsync(result.Value!.OrderId, paidAmount);
+        StatusMessage = $"Đã thanh toán đơn #{result.Value.OrderId}. Có thể in hoặc xuất hóa đơn.";
+        ClearCartOnly();
+        await LoadAsync();
+    }
+
+    private async Task ExportReceiptAsync()
+    {
+        if (LastReceipt is null)
+        {
+            return;
+        }
+
+        var path = await _receiptService.ExportAsync(LastReceipt);
+        StatusMessage = $"Đã xuất hóa đơn: {path}";
+    }
+
+    private void PrintReceipt()
+    {
+        if (LastReceipt is null)
+        {
+            return;
+        }
+
+        try
+        {
+            _receiptService.Print(LastReceipt);
+            StatusMessage = "Đã gửi hóa đơn đến máy in hoặc đã hủy hộp thoại in.";
+        }
+        catch (Exception ex)
+        {
+            StatusMessage = $"Không thể in hóa đơn: {ex.Message}";
         }
     }
 
@@ -224,11 +298,18 @@ public sealed class SalesViewModel : ViewModelBase
 
         CartLines.Remove(SelectedCartLine);
         SelectedCartLine = null;
+        LastReceipt = null;
         RecalculateTotals();
         CheckoutCommand.RaiseCanExecuteChanged();
     }
 
     private void ClearOrder()
+    {
+        LastReceipt = null;
+        ClearCartOnly();
+    }
+
+    private void ClearCartOnly()
     {
         CartLines.Clear();
         ProductCode = "";
@@ -245,7 +326,19 @@ public sealed class SalesViewModel : ViewModelBase
         var discount = Math.Min(ParseMoney(DiscountText), Subtotal);
         Vat = decimal.Round((Subtotal - discount) * 0.08m, 2);
         Total = Subtotal - discount + Vat;
-        PaymentText = Total.ToString("0.##");
+
+        var paid = ParseMoney(PaymentText);
+        if (paid <= 0m || paid < Total)
+        {
+            PaymentText = Total.ToString("0.##");
+        }
+
+        UpdateChange();
+    }
+
+    private void UpdateChange()
+    {
+        Change = Math.Max(0m, ParseMoney(PaymentText) - Total);
     }
 
     private static decimal ParseMoney(string value)
