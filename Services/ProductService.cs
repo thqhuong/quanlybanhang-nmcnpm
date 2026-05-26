@@ -7,10 +7,12 @@ namespace quanlybanhang_nmcnpm.Services;
 public sealed class ProductService : IProductService
 {
     private readonly ApplicationDbContext _dbContext;
+    private readonly IUserSessionService? _sessionService;
 
-    public ProductService(ApplicationDbContext dbContext)
+    public ProductService(ApplicationDbContext dbContext, IUserSessionService? sessionService = null)
     {
         _dbContext = dbContext;
+        _sessionService = sessionService;
     }
 
     public async Task<IReadOnlyList<ProductListItem>> GetAllAsync()
@@ -56,6 +58,11 @@ public sealed class ProductService : IProductService
 
     public async Task<ValidationResult<ProductListItem>> CreateAsync(ProductInput input)
     {
+        if (!CanManageInventory())
+        {
+            return ValidationResult<ProductListItem>.Failure("Bạn không có quyền quản lý kho.");
+        }
+
         var validation = await ValidateAsync(input);
         if (!validation.IsValid)
         {
@@ -73,6 +80,11 @@ public sealed class ProductService : IProductService
 
     public async Task<ValidationResult<ProductListItem>> UpdateAsync(int id, ProductInput input)
     {
+        if (!CanManageInventory())
+        {
+            return ValidationResult<ProductListItem>.Failure("Bạn không có quyền quản lý kho.");
+        }
+
         var product = await ProductQuery().FirstOrDefaultAsync(p => p.MaHang == id);
         if (product is null)
         {
@@ -92,6 +104,11 @@ public sealed class ProductService : IProductService
 
     public async Task<ValidationResult> DeleteAsync(int id)
     {
+        if (!CanManageInventory())
+        {
+            return ValidationResult.Failure("Bạn không có quyền quản lý kho.");
+        }
+
         var product = await _dbContext.Products.FirstOrDefaultAsync(p => p.MaHang == id);
         if (product is null)
         {
@@ -184,5 +201,10 @@ public sealed class ProductService : IProductService
     private static string Normalize(string? value)
     {
         return value?.Trim().ToLowerInvariant() ?? "";
+    }
+
+    private bool CanManageInventory()
+    {
+        return _sessionService is null || _sessionService.IsInRole(RoleNames.Admin, RoleNames.Storekeeper);
     }
 }

@@ -7,14 +7,21 @@ public sealed class OverviewService : IOverviewService
 {
     private const int LowStockThreshold = 20;
     private readonly ApplicationDbContext _dbContext;
+    private readonly IUserSessionService? _sessionService;
 
-    public OverviewService(ApplicationDbContext dbContext)
+    public OverviewService(ApplicationDbContext dbContext, IUserSessionService? sessionService = null)
     {
         _dbContext = dbContext;
+        _sessionService = sessionService;
     }
 
     public async Task<OverviewMetrics> GetMetricsAsync(DateTime? from = null, DateTime? to = null)
     {
+        if (_sessionService is not null && !_sessionService.IsInRole(RoleNames.Admin, RoleNames.Cashier))
+        {
+            throw new UnauthorizedAccessException("Bạn không có quyền xem tổng quan.");
+        }
+
         var start = (from ?? DateTime.Today).Date;
         var end = (to ?? DateTime.Today).Date;
         if (end < start)

@@ -77,42 +77,42 @@
                     </StackPanel>
 
                     <StackPanel Grid.Row="1" Margin="0,20,0,0">
-                        <RadioButton Style="{StaticResource SidebarMenuItem}" GroupName="Menu" IsChecked="True" Checked="Menu_Checked" Tag="TongQuan">
+                        <RadioButton x:Name="MenuTongQuan" Style="{StaticResource SidebarMenuItem}" GroupName="Menu" IsChecked="True" Checked="Menu_Checked" Tag="TongQuan">
                             <StackPanel Orientation="Horizontal">
                                 <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE80F;" FontSize="16" Margin="0,0,15,0" VerticalAlignment="Center"/>
                                 <TextBlock Text="Tổng quan" FontSize="14" VerticalAlignment="Center"/>
                             </StackPanel>
                         </RadioButton>
 
-                        <RadioButton Style="{StaticResource SidebarMenuItem}" GroupName="Menu" Checked="Menu_Checked" Tag="BanHang">
+                        <RadioButton x:Name="MenuBanHang" Style="{StaticResource SidebarMenuItem}" GroupName="Menu" Checked="Menu_Checked" Tag="BanHang">
                             <StackPanel Orientation="Horizontal">
                                 <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE7BF;" FontSize="16" Margin="0,0,15,0" VerticalAlignment="Center"/>
                                 <TextBlock Text="Bán hàng (POS)" FontSize="14" VerticalAlignment="Center"/>
                             </StackPanel>
                         </RadioButton>
 
-                        <RadioButton Style="{StaticResource SidebarMenuItem}" GroupName="Menu" Checked="Menu_Checked" Tag="TaiKhoan">
+                        <RadioButton x:Name="MenuTaiKhoan" Style="{StaticResource SidebarMenuItem}" GroupName="Menu" Checked="Menu_Checked" Tag="TaiKhoan">
                             <StackPanel Orientation="Horizontal">
                                 <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE713;" FontSize="16" Margin="0,0,15,0" VerticalAlignment="Center"/>
                                 <TextBlock Text="Tài khoản" FontSize="14" VerticalAlignment="Center"/>
                             </StackPanel>
                         </RadioButton>
 
-                        <RadioButton Style="{StaticResource SidebarMenuItem}" GroupName="Menu" Checked="Menu_Checked" Tag="KhachHang">
+                        <RadioButton x:Name="MenuKhachHang" Style="{StaticResource SidebarMenuItem}" GroupName="Menu" Checked="Menu_Checked" Tag="KhachHang">
                             <StackPanel Orientation="Horizontal">
                                 <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE716;" FontSize="16" Margin="0,0,15,0" VerticalAlignment="Center"/>
                                 <TextBlock Text="Khách hàng" FontSize="14" VerticalAlignment="Center"/>
                             </StackPanel>
                         </RadioButton>
 
-                        <RadioButton Style="{StaticResource SidebarMenuItem}" GroupName="Menu" Checked="Menu_Checked" Tag="HangHoa">
+                        <RadioButton x:Name="MenuHangHoa" Style="{StaticResource SidebarMenuItem}" GroupName="Menu" Checked="Menu_Checked" Tag="HangHoa">
                             <StackPanel Orientation="Horizontal">
                                 <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE7B8;" FontSize="16" Margin="0,0,15,0" VerticalAlignment="Center"/>
                                 <TextBlock Text="Hàng hóa" FontSize="14" VerticalAlignment="Center"/>
                             </StackPanel>
                         </RadioButton>
 
-                        <RadioButton Style="{StaticResource SidebarMenuItem}" GroupName="Menu" Checked="Menu_Checked" Tag="PhieuNhap">
+                        <RadioButton x:Name="MenuPhieuNhap" Style="{StaticResource SidebarMenuItem}" GroupName="Menu" Checked="Menu_Checked" Tag="PhieuNhap">
                             <StackPanel Orientation="Horizontal">
                                 <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE896;" FontSize="16" Margin="0,0,15,0" VerticalAlignment="Center"/>
                                 <TextBlock Text="Lập phiếu nhập kho" FontSize="14" VerticalAlignment="Center"/>
