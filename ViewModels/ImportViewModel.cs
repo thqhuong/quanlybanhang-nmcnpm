@@ -329,6 +329,15 @@ public sealed class ImportViewModel : ViewModelBase
         LowStockItems.ResetWith(await _inventoryService.GetLowStockAsync());
         OnPropertyChanged(nameof(LowStockCount));
     }
+
+    private sealed record ReceiptPrintData(
+        string SupplierName,
+        string EmployeeName,
+        string DeliveredBy,
+        string Note,
+        DateTime Date,
+        decimal Total,
+        IReadOnlyList<ReceiptLine> Lines);
 }
 
 public sealed class ReceiptLine : ViewModelBase
