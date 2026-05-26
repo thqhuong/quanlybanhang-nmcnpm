@@ -4,6 +4,7 @@ public class User
 {
     public int MaNhanVien { get; set; }
     public string TenDangNhap { get; set; } = string.Empty;
+    public string PasswordHash { get; set; } = string.Empty;
     public string TenNV { get; set; } = string.Empty;
     public DateTime? NgaySinh { get; set; }
     public DateTime NgayDangKy { get; set; }

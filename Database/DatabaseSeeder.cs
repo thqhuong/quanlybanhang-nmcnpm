@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using quanlybanhang_nmcnpm.Models;
+using quanlybanhang_nmcnpm.Services;
 
 namespace quanlybanhang_nmcnpm.Database;
 
@@ -32,11 +33,13 @@ public static class DatabaseSeeder
             var cashierRoleId = await GetRoleIdAsync(dbContext, "Cashier");
             var storekeeperRoleId = await GetRoleIdAsync(dbContext, "Storekeeper");
             var now = DateTime.Today;
+            var defaultPassword = PasswordHasher.HashPassword("admin");
 
             dbContext.Users.AddRange(
                 new User
                 {
                     TenDangNhap = "admin",
+                    PasswordHash = defaultPassword,
                     TenNV = "Trần Quản Trị",
                     NgayDangKy = now.AddDays(-30),
                     SoDienThoai = "0900000001",
@@ -48,6 +51,7 @@ public static class DatabaseSeeder
                 new User
                 {
                     TenDangNhap = "cashier",
+                    PasswordHash = defaultPassword,
                     TenNV = "Nguyễn Thu Ngân",
                     NgayDangKy = now.AddDays(-20),
                     SoDienThoai = "0900000002",
@@ -59,6 +63,7 @@ public static class DatabaseSeeder
                 new User
                 {
                     TenDangNhap = "storekeeper",
+                    PasswordHash = defaultPassword,
                     TenNV = "Phạm Thủ Kho",
                     NgayDangKy = now.AddDays(-15),
                     SoDienThoai = "0900000003",
