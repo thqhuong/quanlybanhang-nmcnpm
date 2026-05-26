@@ -1,4 +1,10 @@
 using System.Collections.ObjectModel;
+using System.Globalization;
+using System.Text;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Documents;
+using System.Windows.Media;
 using quanlybanhang_nmcnpm.Services;
 
 namespace quanlybanhang_nmcnpm.ViewModels;
@@ -19,6 +25,7 @@ public sealed class ImportViewModel : ViewModelBase
     private string _note = "";
     private decimal _total;
     private string _statusMessage = "";
+    private ReceiptPrintData? _printData;
 
     public ImportViewModel(
         IProductService productService,
@@ -33,6 +40,7 @@ public sealed class ImportViewModel : ViewModelBase
         RemoveLineCommand = new RelayCommand(RemoveSelectedLine, () => SelectedLine is not null);
         SaveCommand = new AsyncRelayCommand(SaveAsync, () => Lines.Count > 0);
         NewCommand = new RelayCommand(ClearReceipt);
+        PrintCommand = new RelayCommand(Print, () => _printData is not null);
     }
 
     public ObservableCollection<CategoryOption> Suppliers { get; } = new();
@@ -43,6 +51,7 @@ public sealed class ImportViewModel : ViewModelBase
     public RelayCommand RemoveLineCommand { get; }
     public AsyncRelayCommand SaveCommand { get; }
     public RelayCommand NewCommand { get; }
+    public RelayCommand PrintCommand { get; }
 
     public CategoryOption? SelectedSupplier
     {
@@ -190,6 +199,15 @@ public sealed class ImportViewModel : ViewModelBase
         StatusMessage = result.IsValid ? "Đã lưu phiếu nhập." : result.ErrorMessage ?? "";
         if (result.IsValid)
         {
+            _printData = new ReceiptPrintData(
+                SelectedSupplier.Name,
+                _sessionService.CurrentUser?.FullName ?? "",
+                DeliveredBy,
+                Note,
+                DateTime.Now,
+                Total,
+                Lines.ToList());
+            PrintCommand.RaiseCanExecuteChanged();
             ClearReceipt();
             await LoadAsync();
         }
@@ -225,6 +243,86 @@ public sealed class ImportViewModel : ViewModelBase
         Total = Lines.Sum(line => line.LineTotal);
         OnPropertyChanged(nameof(LineCount));
     }
+
+    private void Print()
+    {
+        if (_printData is null)
+        {
+            return;
+        }
+
+        try
+        {
+            var printDialog = new PrintDialog();
+            if (printDialog.ShowDialog() != true)
+            {
+                return;
+            }
+
+            var text = BuildReceiptText(_printData);
+            var document = new FlowDocument
+            {
+                FontFamily = new FontFamily("Consolas"),
+                FontSize = 12,
+                PagePadding = new Thickness(24),
+                ColumnWidth = printDialog.PrintableAreaWidth
+            };
+            document.Blocks.Add(new Paragraph(new Run(text)));
+
+            var paginator = ((IDocumentPaginatorSource)document).DocumentPaginator;
+            printDialog.PrintDocument(paginator, "Phieu nhap kho");
+            StatusMessage = "Đã gửi phiếu nhập đến máy in.";
+        }
+        catch (Exception ex)
+        {
+            StatusMessage = $"Không thể in: {ex.Message}";
+        }
+    }
+
+    private static string BuildReceiptText(ReceiptPrintData data)
+    {
+        var culture = CultureInfo.GetCultureInfo("vi-VN");
+        var builder = new StringBuilder();
+        builder.AppendLine("CUA HANG QUAN LY BAN HANG");
+        builder.AppendLine("PHIEU NHAP KHO");
+        builder.AppendLine(new string('-', 42));
+        builder.AppendLine($"Ngay nhap:  {data.Date:dd/MM/yyyy HH:mm}");
+        builder.AppendLine($"Nha cung cap: {data.SupplierName}");
+        builder.AppendLine($"Nhan vien:    {data.EmployeeName}");
+        builder.AppendLine($"Nguoi giao:   {data.DeliveredBy}");
+        if (!string.IsNullOrWhiteSpace(data.Note))
+        {
+            builder.AppendLine($"Ghi chu:      {data.Note}");
+        }
+
+        builder.AppendLine(new string('-', 42));
+
+        foreach (var line in data.Lines)
+        {
+            builder.AppendLine($"{line.Code} - {line.Name}");
+            builder.AppendLine($"  {line.Quantity} {line.Unit} x {FormatMoney(line.UnitCost, culture)} = {FormatMoney(line.LineTotal, culture)}");
+        }
+
+        builder.AppendLine(new string('-', 42));
+        builder.AppendLine($"Tong thanh toan: {FormatMoney(data.Total, culture)}");
+        builder.AppendLine(new string('-', 42));
+        builder.AppendLine("Cam on quy khach!");
+        return builder.ToString();
+    }
+
+    private static string FormatMoney(decimal value, CultureInfo culture)
+    {
+        return string.Format(culture, "{0:N0} d", value);
+    }
+
+    private sealed record ReceiptPrintData(
+        string SupplierName,
+        string EmployeeName,
+        string DeliveredBy,
+        string Note,
+        DateTime Date,
+        decimal Total,
+        IReadOnlyList<ReceiptLine> Lines);
 }
 
 public sealed class ReceiptLine : ViewModelBase

@@ -18,7 +18,7 @@
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
                 <Button Content="&#xE8A5; Tạo mới" Command="{Binding NewCommand}" FontFamily="Segoe UI, Segoe MDL2 Assets" Background="White" BorderBrush="#CCCCCC" Height="30" Padding="10,0" Margin="0,0,8,0"/>
                 <Button Content="&#xE74E; Lưu phiếu" Command="{Binding SaveCommand}" FontFamily="Segoe UI, Segoe MDL2 Assets" Background="#E8F5E9" BorderBrush="#81C784" Height="30" Padding="10,0" Margin="0,0,8,0" Foreground="#2E7D32" FontWeight="Bold"/>
-                <Button Content="&#xE749; In" FontFamily="Segoe UI, Segoe MDL2 Assets" Background="White" BorderBrush="#CCCCCC" Height="30" Padding="10,0"/>
+                <Button Content="&#xE749; In" Command="{Binding PrintCommand}" FontFamily="Segoe UI, Segoe MDL2 Assets" Background="White" BorderBrush="#CCCCCC" Height="30" Padding="10,0"/>
             </StackPanel>
         </Grid>
 
