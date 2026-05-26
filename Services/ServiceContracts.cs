@@ -28,7 +28,10 @@ public interface IOrderService
 public interface IInventoryService
 {
     Task<IReadOnlyList<CategoryOption>> GetSuppliersAsync();
+    Task<IReadOnlyList<LowStockReportItem>> GetLowStockAsync(int threshold = 20);
     Task<ValidationResult<decimal>> CreateReceiptAsync(CreateInventoryReceiptInput input);
+    void Print(InventoryReceiptPrintout receipt);
+    void OpenReceiptFolder();
 }
 
 public interface IAccountService
@@ -58,4 +61,5 @@ public interface IReceiptService
 {
     Task<string> ExportAsync(OrderReceipt receipt);
     void Print(OrderReceipt receipt);
+    void OpenReceiptFolder();
 }

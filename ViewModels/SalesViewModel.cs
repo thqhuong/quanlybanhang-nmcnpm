@@ -1,4 +1,6 @@
 using System.Collections.ObjectModel;
+using System.Globalization;
+using System.Text;
 using quanlybanhang_nmcnpm.Services;
 
 namespace quanlybanhang_nmcnpm.ViewModels;
@@ -13,6 +15,7 @@ public sealed class SalesViewModel : ViewModelBase
     private readonly List<ProductListItem> _products = new();
     private int _employeeId;
     private string _productCode = "";
+    private string _productName = "";
     private string _quantityText = "1";
     private CustomerListItem? _selectedCustomer;
     private CartLine? _selectedCartLine;
@@ -24,6 +27,7 @@ public sealed class SalesViewModel : ViewModelBase
     private decimal _change;
     private string _statusMessage = "";
     private OrderReceipt? _lastReceipt;
+    private bool _isApplyingProductSuggestion;
 
     public SalesViewModel(
         IProductService productService,
@@ -44,10 +48,12 @@ public sealed class SalesViewModel : ViewModelBase
         NewOrderCommand = new RelayCommand(ClearOrder);
         ExportReceiptCommand = new AsyncRelayCommand(ExportReceiptAsync, () => LastReceipt is not null);
         PrintReceiptCommand = new RelayCommand(PrintReceipt, () => LastReceipt is not null);
+        OpenReceiptFolderCommand = new RelayCommand(OpenReceiptFolder);
     }
 
     public ObservableCollection<CustomerListItem> Customers { get; } = new();
     public ObservableCollection<CartLine> CartLines { get; } = new();
+    public ObservableCollection<ProductSuggestion> ProductNameSuggestions { get; } = new();
 
     public AsyncRelayCommand LoadCommand { get; }
     public AsyncRelayCommand AddProductCommand { get; }
@@ -56,11 +62,28 @@ public sealed class SalesViewModel : ViewModelBase
     public RelayCommand NewOrderCommand { get; }
     public AsyncRelayCommand ExportReceiptCommand { get; }
     public RelayCommand PrintReceiptCommand { get; }
+    public RelayCommand OpenReceiptFolderCommand { get; }
 
     public string ProductCode
     {
         get => _productCode;
         set => SetProperty(ref _productCode, value);
+    }
+
+    public string ProductName
+    {
+        get => _productName;
+        set
+        {
+            if (SetProperty(ref _productName, value))
+            {
+                if (!_isApplyingProductSuggestion)
+                {
+                    ProductCode = "";
+                    UpdateProductNameSuggestions();
+                }
+            }
+        }
     }
 
     public string QuantityText
@@ -158,6 +181,8 @@ public sealed class SalesViewModel : ViewModelBase
     {
         _products.Clear();
         _products.AddRange(await _productService.GetAllAsync());
+        ResetProductNameSuggestions(_products);
+
         Customers.ResetWith(await _customerService.GetAllAsync());
         SelectedCustomer = Customers.FirstOrDefault(customer => customer.Name == "Khách lẻ")
             ?? Customers.FirstOrDefault();
@@ -173,10 +198,7 @@ public sealed class SalesViewModel : ViewModelBase
             return;
         }
 
-        var code = ProductCode.Trim();
-        var product = _products.FirstOrDefault(p =>
-            p.Code.Equals(code, StringComparison.OrdinalIgnoreCase));
-
+        var product = await FindProductAsync();
         if (product is null)
         {
             StatusMessage = "Không tìm thấy sản phẩm.";
@@ -200,7 +222,6 @@ public sealed class SalesViewModel : ViewModelBase
             CartLines.Add(new CartLine(product.Id, product.Code, product.Name, product.Unit, product.Price, quantity));
         }
 
-        ProductCode = "";
         QuantityText = "1";
         StatusMessage = "Đã thêm sản phẩm vào giỏ.";
         LastReceipt = null;
@@ -279,6 +300,11 @@ public sealed class SalesViewModel : ViewModelBase
         }
     }
 
+    private void OpenReceiptFolder()
+    {
+        _receiptService.OpenReceiptFolder();
+    }
+
     private void RemoveSelectedLine()
     {
         if (SelectedCartLine is null)
@@ -303,11 +329,74 @@ public sealed class SalesViewModel : ViewModelBase
     {
         CartLines.Clear();
         ProductCode = "";
+        ProductName = "";
         QuantityText = "1";
         DiscountText = "0";
         PaymentText = "0";
         RecalculateTotals();
         CheckoutCommand.RaiseCanExecuteChanged();
+    }
+
+    private async Task<ProductListItem?> FindProductAsync()
+    {
+        var code = ProductCode.Trim();
+        var name = ProductName.Trim();
+        if (string.IsNullOrWhiteSpace(code) && string.IsNullOrWhiteSpace(name))
+        {
+            return null;
+        }
+
+        if (!string.IsNullOrWhiteSpace(code))
+        {
+            var exactCode = _products.FirstOrDefault(product =>
+                product.Code.Equals(code, StringComparison.OrdinalIgnoreCase));
+            if (exactCode is not null)
+            {
+                return exactCode;
+            }
+
+            var searchResult = await _productService.SearchAsync(code);
+            return searchResult.FirstOrDefault(product =>
+                product.Code.Equals(code, StringComparison.OrdinalIgnoreCase));
+        }
+
+        var normalizedName = NormalizeForSearch(name);
+        return _products.FirstOrDefault(product => NormalizeForSearch(product.Name) == normalizedName)
+            ?? _products.FirstOrDefault(product => NormalizeForSearch(product.Name).Contains(normalizedName));
+    }
+
+    private void UpdateProductNameSuggestions()
+    {
+        ProductNameSuggestions.Clear();
+        var normalized = NormalizeForSearch(ProductName);
+        if (string.IsNullOrWhiteSpace(normalized))
+        {
+            ResetProductNameSuggestions(_products);
+            return;
+        }
+
+        ResetProductNameSuggestions(_products
+            .Where(product => NormalizeForSearch(product.Name).Contains(normalized))
+            .OrderBy(product => product.Name)
+            .Take(12));
+    }
+
+    public void ApplyProductSuggestion(ProductSuggestion suggestion)
+    {
+        _isApplyingProductSuggestion = true;
+        ProductCode = suggestion.Code;
+        ProductName = suggestion.Name;
+        _isApplyingProductSuggestion = false;
+        ProductNameSuggestions.ResetWith(new[] { suggestion });
+    }
+
+    private void ResetProductNameSuggestions(IEnumerable<ProductListItem> products)
+    {
+        ProductNameSuggestions.Clear();
+        foreach (var product in products.OrderBy(product => product.Name).Take(20))
+        {
+            ProductNameSuggestions.Add(new ProductSuggestion(product.Id, product.Code, product.Name));
+        }
     }
 
     private void RecalculateTotals()
@@ -334,6 +423,22 @@ public sealed class SalesViewModel : ViewModelBase
     private static decimal ParseMoney(string value)
     {
         return decimal.TryParse(value, out var parsed) ? Math.Max(0m, parsed) : 0m;
+    }
+
+    private static string NormalizeForSearch(string value)
+    {
+        var normalized = value.Trim().ToLowerInvariant().Normalize(NormalizationForm.FormD);
+        var builder = new StringBuilder(normalized.Length);
+        foreach (var ch in normalized)
+        {
+            var category = CharUnicodeInfo.GetUnicodeCategory(ch);
+            if (category != UnicodeCategory.NonSpacingMark)
+            {
+                builder.Append(ch == 'đ' ? 'd' : ch);
+            }
+        }
+
+        return builder.ToString().Normalize(NormalizationForm.FormC);
     }
 }
 
@@ -370,4 +475,9 @@ public sealed class CartLine : ViewModelBase
     }
 
     public decimal LineTotal => UnitPrice * Quantity;
+}
+
+public sealed record ProductSuggestion(int ProductId, string Code, string Name)
+{
+    public string DisplayText => $"{Code} - {Name}";
 }

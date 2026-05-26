@@ -18,12 +18,12 @@
 
         <Border Grid.Row="1" Background="#F8F9FA" BorderBrush="#E0E0E0" BorderThickness="1" Padding="10" Margin="0,0,0,12">
             <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                <TextBlock Text="Khoảng thời gian:" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                <ComboBox ItemsSource="{Binding DateRangeOptions}" SelectedItem="{Binding SelectedDateRange}" Width="130" Height="30" VerticalContentAlignment="Center" Margin="0,0,12,0"/>
                 <TextBlock Text="Từ ngày:" VerticalAlignment="Center" Margin="0,0,6,0"/>
-                <TextBox Text="{Binding FromDateText, UpdateSourceTrigger=PropertyChanged}" Width="110" Height="30" VerticalContentAlignment="Center" Margin="0,0,12,0"/>
+                <DatePicker SelectedDate="{Binding FromDate}" Width="130" Height="30" VerticalContentAlignment="Center" Margin="0,0,12,0"/>
                 <TextBlock Text="Đến ngày:" VerticalAlignment="Center" Margin="0,0,6,0"/>
-                <TextBox Text="{Binding ToDateText, UpdateSourceTrigger=PropertyChanged}" Width="110" Height="30" VerticalContentAlignment="Center" Margin="0,0,12,0"/>
-                <Button Content="Hôm nay" Command="{Binding TodayCommand}" Background="White" BorderBrush="#CCCCCC" Height="30" Padding="12,0" Margin="0,0,8,0"/>
-                <Button Content="Tháng này" Command="{Binding ThisMonthCommand}" Background="White" BorderBrush="#CCCCCC" Height="30" Padding="12,0" Margin="0,0,8,0"/>
+                <DatePicker SelectedDate="{Binding ToDate}" Width="130" Height="30" VerticalContentAlignment="Center" Margin="0,0,12,0"/>
                 <Button Content="Tạo báo cáo" Command="{Binding GenerateReportCommand}" Background="#0078D7" Foreground="White" BorderThickness="0" Height="30" Padding="16,0"/>
             </StackPanel>
         </Border>
@@ -75,18 +75,19 @@
 
         <Grid Grid.Row="3">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*" MinWidth="320"/>
+                <ColumnDefinition Width="6"/>
+                <ColumnDefinition Width="*" MinWidth="320"/>
             </Grid.ColumnDefinitions>
 
-            <GroupBox Header="Sản phẩm bán chạy" Margin="0,0,10,0">
+            <GroupBox Header="Sản phẩm bán chạy" Margin="0,0,8,0">
                 <ListView ItemsSource="{Binding TopProducts}" BorderThickness="0">
                     <ListView.View>
                         <GridView>
                             <GridViewColumn Header="Mã" Width="90" DisplayMemberBinding="{Binding ProductCode}"/>
-                            <GridViewColumn Header="Tên hàng" Width="220" DisplayMemberBinding="{Binding ProductName}"/>
+                            <GridViewColumn Header="Tên hàng" Width="250" DisplayMemberBinding="{Binding ProductName}"/>
                             <GridViewColumn Header="SL bán" Width="70" DisplayMemberBinding="{Binding QuantitySold}"/>
-                            <GridViewColumn Header="Doanh thu" Width="110">
+                            <GridViewColumn Header="Doanh thu" Width="120">
                                 <GridViewColumn.CellTemplate>
                                     <DataTemplate>
                                         <TextBlock Text="{Binding Revenue, StringFormat={}{0:N0} đ}" HorizontalAlignment="Right"/>
@@ -98,12 +99,14 @@
                 </ListView>
             </GroupBox>
 
-            <GroupBox Grid.Column="1" Header="Tồn kho cần chú ý">
+            <GridSplitter Grid.Column="1" Width="6" HorizontalAlignment="Stretch" Background="#D0D7DE" ShowsPreview="True"/>
+
+            <GroupBox Grid.Column="2" Header="Tồn kho cần chú ý" Margin="8,0,0,0">
                 <ListView ItemsSource="{Binding LowStockItems}" BorderThickness="0">
                     <ListView.View>
                         <GridView>
                             <GridViewColumn Header="Mã" Width="90" DisplayMemberBinding="{Binding ProductCode}"/>
-                            <GridViewColumn Header="Tên hàng" Width="240" DisplayMemberBinding="{Binding ProductName}"/>
+                            <GridViewColumn Header="Tên hàng" Width="260" DisplayMemberBinding="{Binding ProductName}"/>
                             <GridViewColumn Header="Tồn" Width="60" DisplayMemberBinding="{Binding Stock}"/>
                             <GridViewColumn Header="ĐVT" Width="60" DisplayMemberBinding="{Binding Unit}"/>
                         </GridView>

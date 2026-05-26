@@ -7,6 +7,7 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <UseWPF>true</UseWPF>
+    <ApplicationIcon>Assets\app.ico</ApplicationIcon>
     <DefaultItemExcludes>$(DefaultItemExcludes);bin\**;obj\**;quanlybanhang-nmcnpm.Tests\**</DefaultItemExcludes>
 	<GenerateAssemblyInfo>false</GenerateAssemblyInfo>  
 	<GenerateTargetFrameworkAttribute>false</GenerateTargetFrameworkAttribute>
@@ -15,6 +16,10 @@
   <ItemGroup>
     <Compile Remove="bin\**\*.cs;obj\**\*.cs;quanlybanhang-nmcnpm.Tests\**\*.cs" />
     <None Remove="bin\**;obj\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="Assets\app.ico" />
   </ItemGroup>
 
   <ItemGroup>

@@ -1,10 +1,5 @@
 using System.Collections.ObjectModel;
 using System.Globalization;
-using System.Text;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Documents;
-using System.Windows.Media;
 using quanlybanhang_nmcnpm.Services;
 
 namespace quanlybanhang_nmcnpm.ViewModels;
@@ -19,8 +14,9 @@ public sealed class ImportViewModel : ViewModelBase
     private CategoryOption? _selectedSupplier;
     private ReceiptLine? _selectedLine;
     private string _productCode = "";
-    private string _quantityText = "1";
-    private string _unitCostText = "0";
+    private string _quantityText = "";
+    private string _unitCostText = "";
+    private string _receiptDateText = DateTime.Today.ToString("dd/MM/yyyy");
     private string _deliveredBy = "";
     private string _note = "";
     private decimal _total;
@@ -40,11 +36,13 @@ public sealed class ImportViewModel : ViewModelBase
         RemoveLineCommand = new RelayCommand(RemoveSelectedLine, () => SelectedLine is not null);
         SaveCommand = new AsyncRelayCommand(SaveAsync, () => Lines.Count > 0);
         NewCommand = new RelayCommand(ClearReceipt);
-        PrintCommand = new RelayCommand(Print, () => _printData is not null);
+        PrintCommand = new RelayCommand(PrintReceipt, () => Lines.Count > 0);
+        OpenReceiptFolderCommand = new RelayCommand(OpenReceiptFolder);
     }
 
     public ObservableCollection<CategoryOption> Suppliers { get; } = new();
     public ObservableCollection<ReceiptLine> Lines { get; } = new();
+    public ObservableCollection<LowStockReportItem> LowStockItems { get; } = new();
 
     public AsyncRelayCommand LoadCommand { get; }
     public AsyncRelayCommand AddLineCommand { get; }
@@ -52,6 +50,7 @@ public sealed class ImportViewModel : ViewModelBase
     public AsyncRelayCommand SaveCommand { get; }
     public RelayCommand NewCommand { get; }
     public RelayCommand PrintCommand { get; }
+    public RelayCommand OpenReceiptFolderCommand { get; }
 
     public CategoryOption? SelectedSupplier
     {
@@ -89,6 +88,12 @@ public sealed class ImportViewModel : ViewModelBase
         set => SetProperty(ref _unitCostText, value);
     }
 
+    public string ReceiptDateText
+    {
+        get => _receiptDateText;
+        set => SetProperty(ref _receiptDateText, value);
+    }
+
     public string DeliveredBy
     {
         get => _deliveredBy;
@@ -114,12 +119,14 @@ public sealed class ImportViewModel : ViewModelBase
     }
 
     public int LineCount => Lines.Count;
+    public int LowStockCount => LowStockItems.Count;
 
     private async Task LoadAsync()
     {
         _products.Clear();
         _products.AddRange(await _productService.GetAllAsync());
         Suppliers.ResetWith(await _inventoryService.GetSuppliersAsync());
+        await RefreshLowStockAsync();
         SelectedSupplier ??= Suppliers.FirstOrDefault();
 
         _employeeId = _sessionService.CurrentUser?.Id ?? 0;
@@ -133,9 +140,9 @@ public sealed class ImportViewModel : ViewModelBase
             return;
         }
 
-        if (!decimal.TryParse(UnitCostText, out var unitCost) || unitCost < 0)
+        if (!decimal.TryParse(UnitCostText, out var unitCost) || unitCost <= 0)
         {
-            StatusMessage = "Đơn giá nhập không hợp lệ.";
+            StatusMessage = "Đơn giá nhập phải lớn hơn 0.";
             return;
         }
 
@@ -143,7 +150,7 @@ public sealed class ImportViewModel : ViewModelBase
         var product = _products.FirstOrDefault(p =>
             p.Code.Equals(code, StringComparison.OrdinalIgnoreCase));
 
-        if (product is null)
+        if (product is null && !string.IsNullOrWhiteSpace(code))
         {
             var searchResult = await _productService.SearchAsync(code);
             product = searchResult.FirstOrDefault(p => p.Code.Equals(code, StringComparison.OrdinalIgnoreCase))
@@ -168,11 +175,12 @@ public sealed class ImportViewModel : ViewModelBase
         }
 
         ProductCode = "";
-        QuantityText = "1";
-        UnitCostText = "0";
+        QuantityText = "";
+        UnitCostText = "";
         StatusMessage = "Đã thêm mặt hàng vào phiếu nhập.";
         RecalculateTotal();
         SaveCommand.RaiseCanExecuteChanged();
+        PrintCommand.RaiseCanExecuteChanged();
     }
 
     private async Task SaveAsync()
@@ -189,9 +197,16 @@ public sealed class ImportViewModel : ViewModelBase
             return;
         }
 
+        if (!TryParseReceiptDate(out var receiptDate))
+        {
+            StatusMessage = "Ngày nhập không hợp lệ. Vui lòng nhập theo định dạng dd/MM/yyyy.";
+            return;
+        }
+
         var result = await _inventoryService.CreateReceiptAsync(new CreateInventoryReceiptInput(
             SelectedSupplier.Id,
             _employeeId,
+            receiptDate,
             DeliveredBy,
             Note,
             Lines.Select(line => new InventoryReceiptLineInput(line.ProductId, line.Quantity, line.UnitCost)).ToList()));
@@ -213,6 +228,48 @@ public sealed class ImportViewModel : ViewModelBase
         }
     }
 
+    private void PrintReceipt()
+    {
+        if (SelectedSupplier is null)
+        {
+            StatusMessage = "Vui lòng chọn nhà cung cấp.";
+            return;
+        }
+
+        if (!TryParseReceiptDate(out var receiptDate))
+        {
+            StatusMessage = "Ngày nhập không hợp lệ. Vui lòng nhập theo định dạng dd/MM/yyyy.";
+            return;
+        }
+
+        try
+        {
+            _inventoryService.Print(new InventoryReceiptPrintout(
+                receiptDate,
+                SelectedSupplier.Name,
+                DeliveredBy,
+                Note,
+                Total,
+                Lines.Select(line => new InventoryReceiptPrintLine(
+                    line.Code,
+                    line.Name,
+                    line.Unit,
+                    line.Quantity,
+                    line.UnitCost,
+                    line.LineTotal)).ToList()));
+            StatusMessage = "Đã gửi phiếu nhập đến máy in hoặc đã hủy hộp thoại in.";
+        }
+        catch (Exception ex)
+        {
+            StatusMessage = $"Không thể in phiếu nhập: {ex.Message}";
+        }
+    }
+
+    private void OpenReceiptFolder()
+    {
+        _inventoryService.OpenReceiptFolder();
+    }
+
     private void RemoveSelectedLine()
     {
         if (SelectedLine is null)
@@ -224,18 +281,21 @@ public sealed class ImportViewModel : ViewModelBase
         SelectedLine = null;
         RecalculateTotal();
         SaveCommand.RaiseCanExecuteChanged();
+        PrintCommand.RaiseCanExecuteChanged();
     }
 
     private void ClearReceipt()
     {
         Lines.Clear();
         ProductCode = "";
-        QuantityText = "1";
-        UnitCostText = "0";
+        QuantityText = "";
+        UnitCostText = "";
+        ReceiptDateText = DateTime.Today.ToString("dd/MM/yyyy");
         DeliveredBy = "";
         Note = "";
         RecalculateTotal();
         SaveCommand.RaiseCanExecuteChanged();
+        PrintCommand.RaiseCanExecuteChanged();
     }
 
     private void RecalculateTotal()
@@ -244,75 +304,30 @@ public sealed class ImportViewModel : ViewModelBase
         OnPropertyChanged(nameof(LineCount));
     }
 
-    private void Print()
+    private bool TryParseReceiptDate(out DateTime receiptDate)
     {
-        if (_printData is null)
+        if (DateTime.TryParseExact(
+                ReceiptDateText.Trim(),
+                "dd/MM/yyyy",
+                CultureInfo.GetCultureInfo("vi-VN"),
+                DateTimeStyles.None,
+                out var parsed))
         {
-            return;
+            receiptDate = parsed.Date.Add(DateTime.Now.TimeOfDay);
+            return true;
         }
 
-        try
-        {
-            var printDialog = new PrintDialog();
-            if (printDialog.ShowDialog() != true)
-            {
-                return;
-            }
-
-            var text = BuildReceiptText(_printData);
-            var document = new FlowDocument
-            {
-                FontFamily = new FontFamily("Consolas"),
-                FontSize = 12,
-                PagePadding = new Thickness(24),
-                ColumnWidth = printDialog.PrintableAreaWidth
-            };
-            document.Blocks.Add(new Paragraph(new Run(text)));
-
-            var paginator = ((IDocumentPaginatorSource)document).DocumentPaginator;
-            printDialog.PrintDocument(paginator, "Phieu nhap kho");
-            StatusMessage = "Đã gửi phiếu nhập đến máy in.";
-        }
-        catch (Exception ex)
-        {
-            StatusMessage = $"Không thể in: {ex.Message}";
-        }
+        return DateTime.TryParse(
+            ReceiptDateText,
+            CultureInfo.GetCultureInfo("vi-VN"),
+            DateTimeStyles.None,
+            out receiptDate);
     }
 
-    private static string BuildReceiptText(ReceiptPrintData data)
+    private async Task RefreshLowStockAsync()
     {
-        var culture = CultureInfo.GetCultureInfo("vi-VN");
-        var builder = new StringBuilder();
-        builder.AppendLine("CUA HANG QUAN LY BAN HANG");
-        builder.AppendLine("PHIEU NHAP KHO");
-        builder.AppendLine(new string('-', 42));
-        builder.AppendLine($"Ngay nhap:  {data.Date:dd/MM/yyyy HH:mm}");
-        builder.AppendLine($"Nha cung cap: {data.SupplierName}");
-        builder.AppendLine($"Nhan vien:    {data.EmployeeName}");
-        builder.AppendLine($"Nguoi giao:   {data.DeliveredBy}");
-        if (!string.IsNullOrWhiteSpace(data.Note))
-        {
-            builder.AppendLine($"Ghi chu:      {data.Note}");
-        }
-
-        builder.AppendLine(new string('-', 42));
-
-        foreach (var line in data.Lines)
-        {
-            builder.AppendLine($"{line.Code} - {line.Name}");
-            builder.AppendLine($"  {line.Quantity} {line.Unit} x {FormatMoney(line.UnitCost, culture)} = {FormatMoney(line.LineTotal, culture)}");
-        }
-
-        builder.AppendLine(new string('-', 42));
-        builder.AppendLine($"Tong thanh toan: {FormatMoney(data.Total, culture)}");
-        builder.AppendLine(new string('-', 42));
-        builder.AppendLine("Cam on quy khach!");
-        return builder.ToString();
-    }
-
-    private static string FormatMoney(decimal value, CultureInfo culture)
-    {
-        return string.Format(culture, "{0:N0} d", value);
+        LowStockItems.ResetWith(await _inventoryService.GetLowStockAsync());
+        OnPropertyChanged(nameof(LowStockCount));
     }
 
     private sealed record ReceiptPrintData(

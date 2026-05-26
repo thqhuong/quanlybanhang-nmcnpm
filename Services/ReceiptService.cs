@@ -1,4 +1,5 @@
 using System.Globalization;
+using System.Diagnostics;
 using System.IO;
 using System.Text;
 using System.Windows;
@@ -12,10 +13,7 @@ public sealed class ReceiptService : IReceiptService
 {
     public async Task<string> ExportAsync(OrderReceipt receipt)
     {
-        var folder = Path.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
-            "QuanLyBanHang",
-            "Receipts");
+        var folder = GetReceiptFolder();
         Directory.CreateDirectory(folder);
 
         var path = Path.Combine(folder, $"HD-{receipt.OrderId:000000}.txt");
@@ -42,6 +40,17 @@ public sealed class ReceiptService : IReceiptService
 
         var paginator = ((IDocumentPaginatorSource)document).DocumentPaginator;
         printDialog.PrintDocument(paginator, $"Hoa don #{receipt.OrderId}");
+    }
+
+    public void OpenReceiptFolder()
+    {
+        var folder = GetReceiptFolder();
+        Directory.CreateDirectory(folder);
+        Process.Start(new ProcessStartInfo
+        {
+            FileName = folder,
+            UseShellExecute = true
+        });
     }
 
     private static string BuildReceiptText(OrderReceipt receipt)
@@ -76,5 +85,13 @@ public sealed class ReceiptService : IReceiptService
     private static string FormatMoney(decimal value, CultureInfo culture)
     {
         return string.Format(culture, "{0:N0} d", value);
+    }
+
+    private static string GetReceiptFolder()
+    {
+        return Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
+            "QuanLyBanHang",
+            "Receipts");
     }
 }

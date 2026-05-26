@@ -6,6 +6,7 @@
         xmlns:local="clr-namespace:quanlybanhang_nmcnpm"
         mc:Ignorable="d"
         Title="Hệ thống Quản lý Bán hàng" Height="500" Width="550"
+        Icon="Assets/app.ico"
         WindowStartupLocation="CenterScreen"
         Background="#F3F3F3">
 
@@ -39,13 +40,39 @@
         </Style>
     </Window.Resources>
 
-    <StackPanel Margin="0,30,0,0" HorizontalAlignment="Center" Width="340">
+    <StackPanel Margin="0,24,0,0" HorizontalAlignment="Center" Width="340">
+        <Border Width="72" Height="72" CornerRadius="16" Background="#0C78E4" HorizontalAlignment="Center" Margin="0,0,0,12">
+            <Grid>
+                <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE7BF;" FontSize="34" Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                <Border Width="18" Height="18" CornerRadius="9" Background="#2A9D8F" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,10,10,0">
+                    <TextBlock Text="✓" Foreground="White" FontSize="11" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                </Border>
+            </Grid>
+        </Border>
+        <TextBlock Text="QLBH" FontSize="18" FontWeight="Bold" Foreground="#0C78E4" HorizontalAlignment="Center"/>
         <TextBlock Text="Đăng nhập" FontSize="26" FontWeight="Bold" Foreground="#123E82" HorizontalAlignment="Center" Margin="0,10,0,15"/>
         <TextBlock Text="Vui lòng đăng nhập để tiếp tục" FontSize="16" Foreground="#666666" HorizontalAlignment="Center" Margin="0,0,0,30"/>
 
-        <TextBox x:Name="UsernameBox" Height="36" VerticalContentAlignment="Center" Margin="0,0,0,12" ToolTip="Tên đăng nhập"/>
-        <PasswordBox x:Name="PasswordBox" Height="36" VerticalContentAlignment="Center" Margin="0,0,0,12" ToolTip="Mật khẩu"/>
-        <Button Style="{StaticResource RoleButtonStyle}" Click="Login_Click" Height="48" Padding="20,10" Margin="0" HorizontalAlignment="Center" HorizontalContentAlignment="Center">
+        <Grid Margin="0,0,0,12" Width="172" Height="36">
+            <TextBox x:Name="UsernameBox" Height="36" VerticalContentAlignment="Center" Background="Transparent"/>
+            <TextBlock Text="Tên đăng nhập" Foreground="#999" VerticalAlignment="Center" Margin="10,0,0,0" IsHitTestVisible="False">
+                <TextBlock.Style>
+                    <Style TargetType="TextBlock">
+                        <Setter Property="Visibility" Value="Collapsed"/>
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding Text, ElementName=UsernameBox}" Value="">
+                                <Setter Property="Visibility" Value="Visible"/>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </TextBlock.Style>
+            </TextBlock>
+        </Grid>
+        <Grid Margin="0,0,0,12" Width="172" Height="36">
+            <PasswordBox x:Name="PasswordBox" Height="36" VerticalContentAlignment="Center" Background="Transparent" GotFocus="PasswordBox_GotFocus" LostFocus="PasswordBox_LostFocus"/>
+            <TextBlock x:Name="PasswordPlaceholder" Text="Mật khẩu" Foreground="#999" VerticalAlignment="Center" Margin="10,0,0,0" IsHitTestVisible="False"/>
+        </Grid>
+        <Button Style="{StaticResource RoleButtonStyle}" Click="Login_Click" Height="48" Padding="10,10, 30, 10" Margin="0" HorizontalAlignment="Center" HorizontalContentAlignment="Center">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="40"/>

@@ -40,7 +40,10 @@ public sealed class AccountAndOverviewServiceTests
 
         var locked = await service.SetActiveAsync(created.Value.Id, false);
         Assert.True(locked.IsValid, locked.ErrorMessage);
-        Assert.False(await dbContext.Users.Where(user => user.MaNhanVien == created.Value.Id).Select(user => user.IsActive).FirstAsync());
+        Assert.False(await dbContext.Users
+            .Where(user => user.MaNhanVien == created.Value.Id)
+            .Select(user => user.IsActive)
+            .FirstAsync());
     }
 
     [Fact]

@@ -54,11 +54,19 @@
             <ListView.View>
                 <GridView>
                     <GridViewColumn Header="#" Width="45" DisplayMemberBinding="{Binding Id}"/>
-                    <GridViewColumn Header="Số điện thoại" Width="150" DisplayMemberBinding="{Binding Phone}"/>
-                    <GridViewColumn Header="Tên khách hàng" Width="220" DisplayMemberBinding="{Binding Name}"/>
-                    <GridViewColumn Header="Email" Width="200" DisplayMemberBinding="{Binding Email}"/>
-                    <GridViewColumn Header="Điểm" Width="80" DisplayMemberBinding="{Binding Points}"/>
-                    <GridViewColumn Header="Lần mua cuối" Width="150">
+                    <GridViewColumn Header="Số điện thoại" Width="130" DisplayMemberBinding="{Binding Phone}"/>
+                    <GridViewColumn Header="Tên khách hàng" Width="180" DisplayMemberBinding="{Binding Name}"/>
+                    <GridViewColumn Header="Email" Width="180" DisplayMemberBinding="{Binding Email}"/>
+                    <GridViewColumn Header="Địa chỉ" Width="230" DisplayMemberBinding="{Binding Address}"/>
+                    <GridViewColumn Header="Đã thanh toán" Width="120">
+                        <GridViewColumn.CellTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding TotalPaid, StringFormat={}{0:N0} đ}" HorizontalAlignment="Right"/>
+                            </DataTemplate>
+                        </GridViewColumn.CellTemplate>
+                    </GridViewColumn>
+                    <GridViewColumn Header="Điểm" Width="70" DisplayMemberBinding="{Binding Points}"/>
+                    <GridViewColumn Header="Lần mua cuối" Width="130">
                         <GridViewColumn.CellTemplate>
                             <DataTemplate>
                                 <TextBlock Text="{Binding LastPurchase, StringFormat={}{0:dd/MM/yyyy}}"/>

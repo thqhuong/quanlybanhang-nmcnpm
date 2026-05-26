@@ -20,6 +20,7 @@ public partial class DashboardWindow : Window
         _serviceProvider = serviceProvider;
         _sessionService = serviceProvider.GetRequiredService<IUserSessionService>();
         InitializeComponent();
+
         var roleName = _sessionService.CurrentUser?.Role ?? "";
         txtRoleName.Text = roleName;
         txtTitle.Text = $"Hệ thống Quản lý Bán hàng v1.0 - [Chế độ: {roleName}]";

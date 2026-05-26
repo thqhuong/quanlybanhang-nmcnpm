@@ -4,7 +4,10 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              mc:Ignorable="d"
-             d:DesignHeight="600" Background="White" Width="983">
+             d:DesignHeight="600"
+             d:DesignWidth="1000"
+             Background="White"
+             HorizontalAlignment="Stretch">
     <Grid Margin="20">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
@@ -26,13 +29,13 @@
         <Border Grid.Row="1" Background="#F8F9FA" BorderBrush="#E0E0E0" BorderThickness="1" Padding="10" Margin="0,0,0,10">
             <Grid>
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="113"/>
-                    <ColumnDefinition Width="113"/>
-                    <ColumnDefinition Width="148"/>
-                    <ColumnDefinition Width="154"/>
-                    <ColumnDefinition Width="136"/>
-                    <ColumnDefinition Width="114"/>
-                    <ColumnDefinition Width="302"/>
+                    <ColumnDefinition Width="1.1*"/>
+                    <ColumnDefinition Width="1.4*"/>
+                    <ColumnDefinition Width="1.1*"/>
+                    <ColumnDefinition Width="1.5*"/>
+                    <ColumnDefinition Width="1.1*"/>
+                    <ColumnDefinition Width="1.1*"/>
+                    <ColumnDefinition Width="100"/>
                 </Grid.ColumnDefinitions>
                 <TextBox Grid.Column="0" Text="{Binding Username, UpdateSourceTrigger=PropertyChanged}" VerticalContentAlignment="Center" Margin="0,0,8,0" ToolTip="Tên đăng nhập" Tag="Tên đăng nhập" Style="{StaticResource WatermarkTextBoxStyle}"/>
                 <TextBox Grid.Column="1" Text="{Binding FullName, UpdateSourceTrigger=PropertyChanged}" VerticalContentAlignment="Center" Margin="0,0,8,0" ToolTip="Họ tên" Tag="Họ tên" Style="{StaticResource WatermarkTextBoxStyle}"/>
@@ -54,11 +57,11 @@
                     </TextBlock>
                 </Grid>
                 <PasswordBox Grid.Column="5" VerticalContentAlignment="Center" Margin="0,0,8,0" ToolTip="Mật khẩu" Tag="Mật khẩu" Style="{StaticResource WatermarkPasswordBoxStyle}" PasswordChanged="PasswordBox_PasswordChanged"/>
-                <CheckBox Grid.Column="6" Content="Hoạt động" IsChecked="{Binding IsActive}" VerticalAlignment="Center" Height="16"/>
+                <CheckBox Grid.Column="6" Content="Hoạt động" IsChecked="{Binding IsActive}" VerticalAlignment="Center"/>
             </Grid>
         </Border>
 
-        <ListView Grid.Row="2" ItemsSource="{Binding Accounts}" SelectedItem="{Binding SelectedAccount}" BorderBrush="#E0E0E0" BorderThickness="1" AlternationCount="2">
+        <ListView Grid.Row="2" ItemsSource="{Binding Accounts}" SelectedItem="{Binding SelectedAccount}" BorderBrush="#E0E0E0" BorderThickness="1" AlternationCount="2" HorizontalAlignment="Stretch">
             <ListView.View>
                 <GridView>
                     <GridViewColumn Header="#" Width="45" DisplayMemberBinding="{Binding Id}"/>

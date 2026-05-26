@@ -6,8 +6,9 @@ namespace quanlybanhang_nmcnpm.ViewModels;
 public sealed class OverviewViewModel : ViewModelBase
 {
     private readonly IOverviewService _overviewService;
-    private string _fromDateText = DateTime.Today.ToString("dd/MM/yyyy");
-    private string _toDateText = DateTime.Today.ToString("dd/MM/yyyy");
+    private string _selectedDateRange = "Hôm nay";
+    private DateTime? _fromDate = DateTime.Today;
+    private DateTime? _toDate = DateTime.Today;
     private decimal _revenue;
     private int _orderCount;
     private decimal _averageOrderValue;
@@ -20,28 +21,39 @@ public sealed class OverviewViewModel : ViewModelBase
         _overviewService = overviewService;
         LoadCommand = new AsyncRelayCommand(LoadAsync);
         GenerateReportCommand = new AsyncRelayCommand(LoadAsync);
-        TodayCommand = new RelayCommand(UseToday);
-        ThisMonthCommand = new RelayCommand(UseThisMonth);
+        DateRangeOptions.ResetWith(new[] { "Hôm nay", "Tuần này", "Tháng này" });
     }
 
+    public ObservableCollection<string> DateRangeOptions { get; } = new();
     public ObservableCollection<TopProductReportItem> TopProducts { get; } = new();
     public ObservableCollection<LowStockReportItem> LowStockItems { get; } = new();
 
     public AsyncRelayCommand LoadCommand { get; }
     public AsyncRelayCommand GenerateReportCommand { get; }
-    public RelayCommand TodayCommand { get; }
-    public RelayCommand ThisMonthCommand { get; }
 
-    public string FromDateText
+    public string SelectedDateRange
     {
-        get => _fromDateText;
-        set => SetProperty(ref _fromDateText, value);
+        get => _selectedDateRange;
+        set
+        {
+            if (SetProperty(ref _selectedDateRange, value))
+            {
+                ApplySelectedDateRange();
+                GenerateReportCommand.Execute(null);
+            }
+        }
     }
 
-    public string ToDateText
+    public DateTime? FromDate
     {
-        get => _toDateText;
-        set => SetProperty(ref _toDateText, value);
+        get => _fromDate;
+        set => SetProperty(ref _fromDate, value);
+    }
+
+    public DateTime? ToDate
+    {
+        get => _toDate;
+        set => SetProperty(ref _toDate, value);
     }
 
     public decimal Revenue
@@ -82,13 +94,13 @@ public sealed class OverviewViewModel : ViewModelBase
 
     private async Task LoadAsync()
     {
-        if (!TryParseDate(FromDateText, out var from) || !TryParseDate(ToDateText, out var to))
+        if (FromDate is null || ToDate is null)
         {
-            StatusMessage = "Vui lòng nhập ngày theo định dạng dd/MM/yyyy.";
+            StatusMessage = "Vui lòng chọn ngày.";
             return;
         }
 
-        var metrics = await _overviewService.GetMetricsAsync(from, to);
+        var metrics = await _overviewService.GetMetricsAsync(FromDate.Value, ToDate.Value);
         Revenue = metrics.Revenue;
         OrderCount = metrics.OrderCount;
         AverageOrderValue = metrics.AverageOrderValue;
@@ -101,28 +113,24 @@ public sealed class OverviewViewModel : ViewModelBase
             : $"Đã cập nhật báo cáo lúc {DateTime.Now:HH:mm:ss}.";
     }
 
-    private void UseToday()
-    {
-        FromDateText = DateTime.Today.ToString("dd/MM/yyyy");
-        ToDateText = DateTime.Today.ToString("dd/MM/yyyy");
-        GenerateReportCommand.Execute(null);
-    }
-
-    private void UseThisMonth()
+    private void ApplySelectedDateRange()
     {
         var today = DateTime.Today;
-        FromDateText = new DateTime(today.Year, today.Month, 1).ToString("dd/MM/yyyy");
-        ToDateText = today.ToString("dd/MM/yyyy");
-        GenerateReportCommand.Execute(null);
+        var from = today;
+        var to = today;
+
+        if (SelectedDateRange == "Tuần này")
+        {
+            var daysFromMonday = ((int)today.DayOfWeek + 6) % 7;
+            from = today.AddDays(-daysFromMonday);
+        }
+        else if (SelectedDateRange == "Tháng này")
+        {
+            from = new DateTime(today.Year, today.Month, 1);
+        }
+
+        FromDate = from;
+        ToDate = to;
     }
 
-    private static bool TryParseDate(string value, out DateTime date)
-    {
-        return DateTime.TryParseExact(
-            value.Trim(),
-            "dd/MM/yyyy",
-            null,
-            System.Globalization.DateTimeStyles.None,
-            out date);
-    }
 }
