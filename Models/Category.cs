@@ -5,6 +5,6 @@ public class Category
     public int MaNhaCungCap { get; set; }
     public string TenNCC { get; set; } = string.Empty;
 
+    // Navigation Properties
     public virtual ICollection<Product> Products { get; set; } = new HashSet<Product>();
-    public virtual ICollection<InventoryReceipt> InventoryReceipts { get; set; } = new HashSet<InventoryReceipt>();
 }

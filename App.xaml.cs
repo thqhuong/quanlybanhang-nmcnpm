@@ -1,24 +1,22 @@
+﻿using System.Configuration;
+using System.Data;
 using System.Windows;
 using Microsoft.Extensions.DependencyInjection;
 using quanlybanhang_nmcnpm.Database;
-using quanlybanhang_nmcnpm.Services;
-using quanlybanhang_nmcnpm.ViewModels;
 
 namespace quanlybanhang_nmcnpm;
 
+/// <summary>
+/// Interaction logic for App.xaml
+/// </summary>
 public partial class App : Application
 {
     private IServiceProvider? _serviceProvider;
-
-    public static IServiceProvider Services => ((App)Current)._serviceProvider
-        ?? throw new InvalidOperationException("Application services are not initialized.");
 
     public App()
     {
         var services = new ServiceCollection();
         services.AddDatabaseServices();
-        services.AddApplicationServices();
-        services.AddViewModels();
         _serviceProvider = services.BuildServiceProvider();
     }
 
@@ -26,22 +24,18 @@ public partial class App : Application
     {
         base.OnStartup(e);
 
-        if (_serviceProvider is null)
+        if (_serviceProvider != null)
         {
-            Shutdown(1);
-            return;
-        }
-
-        try
-        {
-            await _serviceProvider.InitializeDatabaseAsync();
-            var mainWindow = new MainWindow(_serviceProvider);
-            mainWindow.Show();
-        }
-        catch (Exception ex)
-        {
-            MessageBox.Show($"Lỗi khởi tạo cơ sở dữ liệu: {ex.Message}", "Lỗi");
-            Shutdown(1);
+            try
+            {
+                await _serviceProvider.InitializeDatabaseAsync();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Database initialization error: {ex.Message}", "Error");
+                this.Shutdown(1);
+            }
         }
     }
 }
+
