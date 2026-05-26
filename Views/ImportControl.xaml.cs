@@ -1,35 +1,29 @@
-using System.Collections.ObjectModel;
 using System.Windows.Controls;
+using quanlybanhang_nmcnpm.ViewModels;
 
-namespace quanlybanhang_nmcnpm.Views
+namespace quanlybanhang_nmcnpm.Views;
+
+public partial class ImportControl : UserControl
 {
-    public partial class ImportControl : UserControl
+    private readonly ImportViewModel _viewModel;
+    private bool _loaded;
+
+    public ImportControl(ImportViewModel viewModel)
     {
-        public ImportControl()
-        {
-            InitializeComponent();
-
-            var items = new ObservableCollection<ImportItemModel>
-            {
-                new ImportItemModel { Code = "SP001", Name = "Bánh quy bơ Danisa 454g", Unit = "Hộp", Quantity = 50, Price = "120.000", Total = "6.000.000" }
-            };
-
-            // Using x:Name instead of hardcoded child traversal
-            var listView = FindName("ImportListView") as ListView;
-            if (listView != null)
-            {
-                listView.ItemsSource = items;
-            }
-        }
+        _viewModel = viewModel;
+        InitializeComponent();
+        DataContext = _viewModel;
+        Loaded += ImportControl_Loaded;
     }
 
-    public class ImportItemModel
+    private void ImportControl_Loaded(object sender, System.Windows.RoutedEventArgs e)
     {
-        public string Code { get; set; }
-        public string Name { get; set; }
-        public string Unit { get; set; }
-        public int Quantity { get; set; }
-        public string Price { get; set; }
-        public string Total { get; set; }
+        if (_loaded)
+        {
+            return;
+        }
+
+        _loaded = true;
+        _viewModel.LoadCommand.Execute(null);
     }
 }

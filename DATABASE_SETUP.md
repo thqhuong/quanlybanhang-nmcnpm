@@ -1,8 +1,8 @@
 # Database Setup Guide
 
-## Project Structure
+## Configuration
 
-The project is organized with the following folder structure:
+The app reads the database connection string in this order:
 
 ```
 quanlybanhang-nmcnpm/
@@ -24,18 +24,12 @@ quanlybanhang-nmcnpm/
 └── App.config                   # Connection string configuration
 ```
 
-## Entity Relationships
+## Schema
 
-### Core Relationships:
-- **User** → **Role** (Many-to-One): Each employee has one role
-- **Product** → **Category** (Many-to-One): Multiple products belong to a category/supplier
-- **Customer** → **Order** (One-to-Many): Each customer can have multiple orders
-- **Order** → **OrderDetail** (One-to-Many): Each order contains multiple order details
-- **OrderDetail** → **Product** (Many-to-One): Order details reference products
-- **InventoryReceipt** → **InventoryReceiptDetail** (One-to-Many): Each receipt has multiple details
-- **InventoryReceiptDetail** → **Product** (Many-to-One): Receipt details reference products
+The EF model is defined in `Database/ApplicationDbContext.cs`. Current migrations:
 
-## Database Configuration
+- `InitialCreate`
+- `DemoReadySchema`
 
 ### Connection String (Environment Variable)
 Set the `QLBH_CONNECTION_STRING` environment variable. The app reads this value at startup.
@@ -75,21 +69,23 @@ Migration files are already included in the `Migrations/` folder. Apply them to 
 
 ### Adding Changes to Database Schema
 
-1. **Add New Migration:**
-   ```powershell
-   Add-Migration [MigrationName]
-   ```
-   Example: `Add-Migration AddUserRoleColumn`
+Run tests:
 
-2. **Update Database:**
-   ```powershell
-   Update-Database
-   ```
+```powershell
+dotnet test
+```
 
-3. **Rollback (if needed):**
-   ```powershell
-   Update-Database -Migration [PreviousMigrationName]
-   ```
+Check package vulnerabilities:
+
+```powershell
+dotnet list package --vulnerable --include-transitive
+```
+
+Apply migrations manually when `dotnet-ef` is installed:
+
+```powershell
+dotnet ef database update
+```
 
 ### Seed Data
 Seed data for demo/development is configured in `ApplicationDbContext` and applied through migrations. After running `Update-Database`, the database includes:

@@ -19,7 +19,7 @@ public class DesignTimeDbContextFactory : IDesignTimeDbContextFactory<Applicatio
                     "Connection string not configured. Set QLBH_CONNECTION_STRING or DefaultConnection in App.config.");
 
         var optionsBuilder = new DbContextOptionsBuilder<ApplicationDbContext>();
-        optionsBuilder.UseSqlServer(connectionString);
+        optionsBuilder.UseSqlServer(DatabaseConfiguration.GetConnectionString());
 
         return new ApplicationDbContext(optionsBuilder.Options);
     }

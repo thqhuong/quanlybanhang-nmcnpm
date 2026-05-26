@@ -72,6 +72,12 @@ public class ApplicationDbContext : DbContext
             .HasForeignKey(ird => ird.MaHang)
             .OnDelete(DeleteBehavior.Restrict);
 
+        modelBuilder.Entity<InventoryReceipt>()
+            .HasOne(ir => ir.Category)
+            .WithMany(c => c.InventoryReceipts)
+            .HasForeignKey(ir => ir.MaNhaCungCap)
+            .OnDelete(DeleteBehavior.Restrict);
+
         // Set primary keys
         modelBuilder.Entity<User>().HasKey(u => u.MaNhanVien);
         modelBuilder.Entity<Role>().HasKey(r => r.MaVaiTro);
