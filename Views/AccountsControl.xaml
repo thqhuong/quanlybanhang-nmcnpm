@@ -4,7 +4,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              mc:Ignorable="d"
-             d:DesignHeight="600" Background="White" Width="983">
+              d:DesignHeight="600" Background="White">
     <Grid Margin="20">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
@@ -19,20 +19,21 @@
                 <Button Content="&#xE8A5; Tạo mới" Command="{Binding NewCommand}" FontFamily="Segoe UI, Segoe MDL2 Assets" Background="White" BorderBrush="#CCCCCC" Height="30" Padding="10,0" Margin="0,0,8,0"/>
                 <Button Content="&#xE710; Thêm" Command="{Binding AddCommand}" FontFamily="Segoe UI, Segoe MDL2 Assets" Background="White" BorderBrush="#CCCCCC" Height="30" Padding="10,0" Margin="0,0,8,0" Foreground="#2E7D32"/>
                 <Button Content="&#xE70F; Cập nhật" Command="{Binding UpdateCommand}" FontFamily="Segoe UI, Segoe MDL2 Assets" Background="White" BorderBrush="#CCCCCC" Height="30" Padding="10,0" Margin="0,0,8,0" Foreground="#004C99"/>
-                <Button Content="&#xE72E; Khóa/Mở" Command="{Binding ToggleActiveCommand}" FontFamily="Segoe UI, Segoe MDL2 Assets" Background="White" BorderBrush="#CCCCCC" Height="30" Padding="10,0" Foreground="#C62828"/>
+                <Button Content="&#xE72E; Khóa/Mở" Command="{Binding ToggleActiveCommand}" FontFamily="Segoe UI, Segoe MDL2 Assets" Background="White" BorderBrush="#CCCCCC" Height="30" Padding="10,0" Margin="0,0,8,0" Foreground="#C62828"/>
+                <Button Content="&#xE74D; Xóa" Command="{Binding DeleteCommand}" FontFamily="Segoe UI, Segoe MDL2 Assets" Background="White" BorderBrush="#CCCCCC" Height="30" Padding="10,0" Foreground="#C62828"/>
             </StackPanel>
         </Grid>
 
         <Border Grid.Row="1" Background="#F8F9FA" BorderBrush="#E0E0E0" BorderThickness="1" Padding="10" Margin="0,0,0,10">
             <Grid>
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="113"/>
-                    <ColumnDefinition Width="113"/>
-                    <ColumnDefinition Width="148"/>
-                    <ColumnDefinition Width="154"/>
-                    <ColumnDefinition Width="136"/>
-                    <ColumnDefinition Width="114"/>
-                    <ColumnDefinition Width="302"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
                 <TextBox Grid.Column="0" Text="{Binding Username, UpdateSourceTrigger=PropertyChanged}" VerticalContentAlignment="Center" Margin="0,0,8,0" ToolTip="Tên đăng nhập" Tag="Tên đăng nhập" Style="{StaticResource WatermarkTextBoxStyle}"/>
                 <TextBox Grid.Column="1" Text="{Binding FullName, UpdateSourceTrigger=PropertyChanged}" VerticalContentAlignment="Center" Margin="0,0,8,0" ToolTip="Họ tên" Tag="Họ tên" Style="{StaticResource WatermarkTextBoxStyle}"/>
@@ -61,13 +62,13 @@
         <ListView Grid.Row="2" ItemsSource="{Binding Accounts}" SelectedItem="{Binding SelectedAccount}" BorderBrush="#E0E0E0" BorderThickness="1" AlternationCount="2">
             <ListView.View>
                 <GridView>
-                    <GridViewColumn Header="#" Width="45" DisplayMemberBinding="{Binding Id}"/>
+                    <GridViewColumn Header="#" Width="40" DisplayMemberBinding="{Binding Id}"/>
                     <GridViewColumn Header="Tên đăng nhập" Width="150" DisplayMemberBinding="{Binding Username}"/>
-                    <GridViewColumn Header="Họ và tên" Width="220" DisplayMemberBinding="{Binding FullName}"/>
-                    <GridViewColumn Header="Email" Width="190" DisplayMemberBinding="{Binding Email}"/>
-                    <GridViewColumn Header="Vai trò" Width="150" DisplayMemberBinding="{Binding Role}"/>
-                    <GridViewColumn Header="Hoạt động" Width="90" DisplayMemberBinding="{Binding IsActive}"/>
-                    <GridViewColumn Header="Đăng nhập cuối" Width="160">
+                    <GridViewColumn Header="Họ và tên" Width="180" DisplayMemberBinding="{Binding FullName}"/>
+                    <GridViewColumn Header="Email" Width="160" DisplayMemberBinding="{Binding Email}"/>
+                    <GridViewColumn Header="Vai trò" Width="130" DisplayMemberBinding="{Binding Role}"/>
+                    <GridViewColumn Header="Hoạt động" Width="80" DisplayMemberBinding="{Binding IsActive}"/>
+                    <GridViewColumn Header="Đăng nhập cuối" Width="140">
                         <GridViewColumn.CellTemplate>
                             <DataTemplate>
                                 <TextBlock Text="{Binding LastLoginAt, StringFormat={}{0:dd/MM/yyyy HH:mm}}"/>

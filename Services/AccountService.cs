@@ -50,7 +50,11 @@ public sealed class AccountService : IAccountService
             return ValidationResult<AccountListItem>.Failure(validation.ErrorMessage!);
         }
 
-        var user = new User { NgayDangKy = DateTime.Today };
+        var user = new User
+        {
+            NgayDangKy = DateTime.Today,
+            PasswordHash = PasswordHasher.HashPassword(input.Password)
+        };
         ApplyInput(user, input);
         _dbContext.Users.Add(user);
         await _dbContext.SaveChangesAsync();
@@ -74,6 +78,11 @@ public sealed class AccountService : IAccountService
             return ValidationResult<AccountListItem>.Failure("Không tìm thấy tài khoản.");
         }
 
+        if (user.TenDangNhap == "admin")
+        {
+            return ValidationResult<AccountListItem>.Failure("Không thể thay đổi tài khoản admin.");
+        }
+
         var validation = await ValidateAsync(input, id);
         if (!validation.IsValid)
         {
@@ -90,6 +99,36 @@ public sealed class AccountService : IAccountService
         return ValidationResult<AccountListItem>.Success(user.ToListItem());
     }
 
+    public async Task<ValidationResult> DeleteAsync(int id)
+    {
+        if (!IsAdmin())
+        {
+            return ValidationResult.Failure("Bạn không có quyền quản lý tài khoản.");
+        }
+
+        var user = await _dbContext.Users.FirstOrDefaultAsync(u => u.MaNhanVien == id);
+        if (user is null)
+        {
+            return ValidationResult.Failure("Không tìm thấy tài khoản.");
+        }
+
+        if (user.TenDangNhap == "admin")
+        {
+            return ValidationResult.Failure("Không thể xóa tài khoản admin.");
+        }
+
+        var hasTransactions = await _dbContext.Orders.AnyAsync(o => o.MaNhanVien == id)
+                           || await _dbContext.InventoryReceipts.AnyAsync(r => r.MaNhanVien == id);
+        if (hasTransactions)
+        {
+            return ValidationResult.Failure("Tài khoản đã phát sinh giao dịch nên không thể xóa.");
+        }
+
+        _dbContext.Users.Remove(user);
+        await _dbContext.SaveChangesAsync();
+        return ValidationResult.Success();
+    }
+
     public async Task<ValidationResult> SetActiveAsync(int id, bool isActive)
     {
         if (!IsAdmin())
@@ -101,6 +140,11 @@ public sealed class AccountService : IAccountService
         if (user is null)
         {
             return ValidationResult.Failure("Không tìm thấy tài khoản.");
+        }
+
+        if (user.TenDangNhap == "admin")
+        {
+            return ValidationResult.Failure("Không thể thay đổi trạng thái tài khoản admin.");
         }
 
         user.IsActive = isActive;
@@ -176,6 +220,22 @@ public sealed class AccountService : IAccountService
         if (!await _dbContext.Roles.AnyAsync(role => role.MaVaiTro == input.RoleId))
         {
             return ValidationResult.Failure("Vai trò không hợp lệ.");
+        }
+
+        var isAdminRole = await _dbContext.Roles.AnyAsync(role => role.MaVaiTro == input.RoleId && role.TenVaiTro == "Admin");
+        if (isAdminRole)
+        {
+            return ValidationResult.Failure("Không thể gán vai trò Admin cho tài khoản khác.");
+        }
+
+        if (existingId is null && string.IsNullOrWhiteSpace(input.Password))
+        {
+            return ValidationResult.Failure("Mật khẩu là bắt buộc.");
+        }
+
+        if (!string.IsNullOrWhiteSpace(input.Password) && input.Password.Length < 6)
+        {
+            return ValidationResult.Failure("Mật khẩu phải có ít nhất 6 ký tự.");
         }
 
         var duplicateUsername = await _dbContext.Users.AnyAsync(user =>

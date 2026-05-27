@@ -34,7 +34,7 @@ public sealed class ImportViewModel : ViewModelBase
         _sessionService = sessionService;
         LoadCommand = new AsyncRelayCommand(LoadAsync);
         AddLineCommand = new AsyncRelayCommand(AddLineAsync);
-        RemoveLineCommand = new RelayCommand(RemoveSelectedLine, () => SelectedLine is not null);
+        RemoveLineCommand = new RelayCommand(RemoveSelectedLine);
         SaveCommand = new AsyncRelayCommand(SaveAsync);
         NewCommand = new RelayCommand(ClearReceipt);
         PrintCommand = new RelayCommand(PrintReceipt, () => _lastReceiptId.HasValue);
@@ -64,10 +64,7 @@ public sealed class ImportViewModel : ViewModelBase
         get => _selectedLine;
         set
         {
-            if (SetProperty(ref _selectedLine, value))
-            {
-                RemoveLineCommand.RaiseCanExecuteChanged();
-            }
+            SetProperty(ref _selectedLine, value);
         }
     }
 
@@ -268,6 +265,7 @@ public sealed class ImportViewModel : ViewModelBase
     {
         if (SelectedLine is null)
         {
+            StatusMessage = "Vui lòng chọn mặt hàng cần xóa.";
             return;
         }
 

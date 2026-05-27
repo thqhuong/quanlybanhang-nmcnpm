@@ -39,6 +39,7 @@ public interface IAccountService
     Task<ValidationResult<AccountListItem>> CreateAsync(AccountInput input);
     Task<ValidationResult<AccountListItem>> UpdateAsync(int id, AccountInput input);
     Task<ValidationResult> SetActiveAsync(int id, bool isActive);
+    Task<ValidationResult> DeleteAsync(int id);
     Task<ValidationResult<UserSession>> AuthenticateAsync(LoginInput input);
 }
 

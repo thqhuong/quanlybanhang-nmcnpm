@@ -143,7 +143,9 @@ public sealed record OverviewMetrics(
     int LowStockProducts,
     int NewCustomers,
     IReadOnlyList<TopProductReportItem> TopProducts,
-    IReadOnlyList<LowStockReportItem> LowStockItems);
+    IReadOnlyList<LowStockReportItem> LowStockItems,
+    IReadOnlyList<RecentOrderItem> RecentOrders,
+    IReadOnlyList<DailyRevenueItem> DailyRevenue);
 
 public sealed record TopProductReportItem(
     string ProductCode,
@@ -156,6 +158,14 @@ public sealed record LowStockReportItem(
     string ProductName,
     int Stock,
     string Unit);
+
+public sealed record RecentOrderItem(
+    int OrderId,
+    string CustomerName,
+    DateTime OrderDate,
+    decimal Amount);
+
+public sealed record DailyRevenueItem(DateTime Date, decimal Revenue);
 
 public static class ServiceModelMapping
 {

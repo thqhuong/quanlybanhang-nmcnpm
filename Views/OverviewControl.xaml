@@ -3,14 +3,20 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:lvc="clr-namespace:LiveCharts.Wpf;assembly=LiveCharts.Wpf"
              mc:Ignorable="d"
              d:DesignHeight="600" d:DesignWidth="900" Background="White">
-    <Grid Margin="20">
+    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+        <Grid Margin="20">
+        <Grid.Resources>
+            <BooleanToVisibilityConverter x:Key="BoolToVis"/>
+        </Grid.Resources>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
-            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
@@ -22,7 +28,9 @@
                 <DatePicker SelectedDate="{Binding FromDate}" DisplayDateEnd="{Binding FromDateDisplayEnd, Mode=OneWay}" Width="130" Height="30" Margin="0,0,12,0"/>
                 <TextBlock Text="Đến ngày:" VerticalAlignment="Center" Margin="0,0,6,0"/>
                 <DatePicker SelectedDate="{Binding ToDate}" DisplayDateStart="{Binding ToDateDisplayStart, Mode=OneWay}" DisplayDateEnd="{Binding ToDateMax, Mode=OneWay}" Width="130" Height="30" Margin="0,0,12,0"/>
-                <Button Content="Hôm nay" Command="{Binding TodayCommand}" Background="White" BorderBrush="#CCCCCC" Height="30" Padding="12,0" Margin="0,0,8,0"/>
+                <Button Content="Hôm nay" Command="{Binding TodayCommand}" Background="White" BorderBrush="#CCCCCC" Height="30" Padding="12,0" Margin="0,0,6,0"/>
+                <Button Content="Hôm qua" Command="{Binding YesterdayCommand}" Background="White" BorderBrush="#CCCCCC" Height="30" Padding="12,0" Margin="0,0,6,0"/>
+                <Button Content="7 ngày" Command="{Binding ThisWeekCommand}" Background="White" BorderBrush="#CCCCCC" Height="30" Padding="12,0" Margin="0,0,6,0"/>
                 <Button Content="Tháng này" Command="{Binding ThisMonthCommand}" Background="White" BorderBrush="#CCCCCC" Height="30" Padding="12,0" Margin="0,0,8,0"/>
                 <Button Content="Tạo báo cáo" Command="{Binding GenerateReportCommand}" Background="#0078D7" Foreground="White" BorderThickness="0" Height="30" Padding="16,0"/>
             </StackPanel>
@@ -73,47 +81,144 @@
             </Border>
         </Grid>
 
-        <Grid Grid.Row="3">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="*"/>
-            </Grid.ColumnDefinitions>
+        <Border Grid.Row="3" BorderBrush="#E0E0E0" BorderThickness="1" CornerRadius="4" Padding="10" Margin="0,0,0,10" Background="#FAFBFC">
+            <StackPanel>
+                <TextBlock Text="Doanh thu theo ngày" FontSize="14" FontWeight="SemiBold" Foreground="#333" Margin="0,0,0,6"/>
+                <Grid Height="250">
+                    <lvc:CartesianChart Series="{Binding RevenueSeries}" Visibility="{Binding HasRevenueData, Converter={StaticResource BoolToVis}}">
+                        <lvc:CartesianChart.AxisX>
+                            <lvc:Axis Labels="{Binding RevenueLabels}" FontSize="10" Foreground="Gray"/>
+                        </lvc:CartesianChart.AxisX>
+                        <lvc:CartesianChart.AxisY>
+                            <lvc:Axis LabelFormatter="{Binding RevenueLabelFormatter}" FontSize="10" Foreground="Gray"/>
+                        </lvc:CartesianChart.AxisY>
+                    </lvc:CartesianChart>
+                    <TextBlock Text="Chưa có dữ liệu doanh thu trong khoảng thời gian này" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="#999999" FontSize="14">
+                        <TextBlock.Style>
+                            <Style TargetType="TextBlock">
+                                <Setter Property="Visibility" Value="Collapsed"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding HasRevenueData}" Value="False">
+                                        <Setter Property="Visibility" Value="Visible"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </TextBlock.Style>
+                    </TextBlock>
+                </Grid>
+            </StackPanel>
+        </Border>
 
-            <GroupBox Header="Sản phẩm bán chạy" Margin="0,0,10,0">
-                <ListView ItemsSource="{Binding TopProducts}" BorderThickness="0">
+        <Grid Grid.Row="4">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <Grid Grid.Row="0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+
+                <GroupBox Header="Sản phẩm bán chạy" Margin="0,0,10,0">
+                    <Grid>
+                        <ListView ItemsSource="{Binding TopProducts}" BorderThickness="0">
+                        <ListView.View>
+                            <GridView>
+                                <GridViewColumn Header="Mã" Width="90" DisplayMemberBinding="{Binding ProductCode}"/>
+                                <GridViewColumn Header="Tên hàng" Width="220" DisplayMemberBinding="{Binding ProductName}"/>
+                                <GridViewColumn Header="SL bán" Width="70" DisplayMemberBinding="{Binding QuantitySold}"/>
+                                <GridViewColumn Header="Doanh thu" Width="110">
+                                    <GridViewColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding Revenue, StringFormat={}{0:N0} đ}" HorizontalAlignment="Right"/>
+                                        </DataTemplate>
+                                    </GridViewColumn.CellTemplate>
+                                </GridViewColumn>
+                                </GridView>
+                            </ListView.View>
+                        </ListView>
+                        <TextBlock Text="Chưa có sản phẩm bán chạy" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="#999999" FontSize="13">
+                            <TextBlock.Style>
+                                <Style TargetType="TextBlock">
+                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding HasTopProducts}" Value="False">
+                                            <Setter Property="Visibility" Value="Visible"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </TextBlock.Style>
+                        </TextBlock>
+                    </Grid>
+                </GroupBox>
+
+            <GroupBox Grid.Column="1" Header="Tồn kho cần chú ý">
+                <Grid>
+                    <ListView ItemsSource="{Binding LowStockItems}" BorderThickness="0">
+                        <ListView.View>
+                            <GridView>
+                                <GridViewColumn Header="Mã" Width="90" DisplayMemberBinding="{Binding ProductCode}"/>
+                                <GridViewColumn Header="Tên hàng" Width="240" DisplayMemberBinding="{Binding ProductName}"/>
+                                <GridViewColumn Header="Tồn" Width="60" DisplayMemberBinding="{Binding Stock}"/>
+                                <GridViewColumn Header="ĐVT" Width="60" DisplayMemberBinding="{Binding Unit}"/>
+                            </GridView>
+                        </ListView.View>
+                    </ListView>
+                    <TextBlock Text="Không có hàng tồn thấp" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="#999999" FontSize="13">
+                        <TextBlock.Style>
+                            <Style TargetType="TextBlock">
+                                <Setter Property="Visibility" Value="Collapsed"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding HasLowStockItems}" Value="False">
+                                        <Setter Property="Visibility" Value="Visible"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </TextBlock.Style>
+                    </TextBlock>
+                </Grid>
+            </GroupBox>
+            </Grid>
+
+            <GroupBox Grid.Row="1" Header="Giao dịch gần đây" Margin="0,10,0,0">
+                <Grid>
+                    <ListView ItemsSource="{Binding RecentOrders}" BorderThickness="0" MaxHeight="200">
                     <ListView.View>
                         <GridView>
-                            <GridViewColumn Header="Mã" Width="90" DisplayMemberBinding="{Binding ProductCode}"/>
-                            <GridViewColumn Header="Tên hàng" Width="220" DisplayMemberBinding="{Binding ProductName}"/>
-                            <GridViewColumn Header="SL bán" Width="70" DisplayMemberBinding="{Binding QuantitySold}"/>
-                            <GridViewColumn Header="Doanh thu" Width="110">
+                            <GridViewColumn Header="#" Width="50" DisplayMemberBinding="{Binding OrderId}"/>
+                            <GridViewColumn Header="Khách hàng" Width="180" DisplayMemberBinding="{Binding CustomerName}"/>
+                            <GridViewColumn Header="Ngày" Width="110" DisplayMemberBinding="{Binding OrderDate, StringFormat={}{0:HH:mm dd/MM}}"/>
+                            <GridViewColumn Header="Số tiền" Width="120">
                                 <GridViewColumn.CellTemplate>
                                     <DataTemplate>
-                                        <TextBlock Text="{Binding Revenue, StringFormat={}{0:N0} đ}" HorizontalAlignment="Right"/>
+                                        <TextBlock Text="{Binding Amount, StringFormat={}{0:N0} đ}" HorizontalAlignment="Right"/>
                                     </DataTemplate>
                                 </GridViewColumn.CellTemplate>
                             </GridViewColumn>
                         </GridView>
                     </ListView.View>
                 </ListView>
-            </GroupBox>
-
-            <GroupBox Grid.Column="1" Header="Tồn kho cần chú ý">
-                <ListView ItemsSource="{Binding LowStockItems}" BorderThickness="0">
-                    <ListView.View>
-                        <GridView>
-                            <GridViewColumn Header="Mã" Width="90" DisplayMemberBinding="{Binding ProductCode}"/>
-                            <GridViewColumn Header="Tên hàng" Width="240" DisplayMemberBinding="{Binding ProductName}"/>
-                            <GridViewColumn Header="Tồn" Width="60" DisplayMemberBinding="{Binding Stock}"/>
-                            <GridViewColumn Header="ĐVT" Width="60" DisplayMemberBinding="{Binding Unit}"/>
-                        </GridView>
-                    </ListView.View>
-                </ListView>
+                    <TextBlock Text="Chưa có giao dịch nào" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="#999999" FontSize="13">
+                        <TextBlock.Style>
+                            <Style TargetType="TextBlock">
+                                <Setter Property="Visibility" Value="Collapsed"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding HasRecentOrders}" Value="False">
+                                        <Setter Property="Visibility" Value="Visible"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </TextBlock.Style>
+                    </TextBlock>
+                </Grid>
             </GroupBox>
         </Grid>
 
-        <Border Grid.Row="4" Background="#F1F3F5" BorderBrush="#E0E0E0" BorderThickness="1,0,1,1" Padding="10,5">
+        <Border Grid.Row="5" Background="#F1F3F5" BorderBrush="#E0E0E0" BorderThickness="1,0,1,1" Padding="10,5">
             <TextBlock Text="{Binding StatusMessage}" Foreground="#333333"/>
         </Border>
     </Grid>
+    </ScrollViewer>
 </UserControl>

@@ -1,4 +1,6 @@
 using System.Collections.ObjectModel;
+using LiveCharts;
+using LiveCharts.Wpf;
 using quanlybanhang_nmcnpm.Services;
 
 namespace quanlybanhang_nmcnpm.ViewModels;
@@ -14,6 +16,11 @@ public sealed class OverviewViewModel : ViewModelBase
     private int _lowStockProducts;
     private int _newCustomers;
     private string _statusMessage = "";
+    private string[] _revenueLabels = [];
+    private bool _hasRevenueData;
+    private bool _hasTopProducts;
+    private bool _hasLowStockItems;
+    private bool _hasRecentOrders;
 
     public OverviewViewModel(IOverviewService overviewService)
     {
@@ -21,15 +28,56 @@ public sealed class OverviewViewModel : ViewModelBase
         LoadCommand = new AsyncRelayCommand(LoadAsync);
         GenerateReportCommand = new AsyncRelayCommand(LoadAsync);
         TodayCommand = new RelayCommand(UseToday);
+        YesterdayCommand = new RelayCommand(UseYesterday);
+        ThisWeekCommand = new RelayCommand(UseThisWeek);
         ThisMonthCommand = new RelayCommand(UseThisMonth);
+        RevenueSeries = new SeriesCollection();
     }
 
     public ObservableCollection<TopProductReportItem> TopProducts { get; } = new();
     public ObservableCollection<LowStockReportItem> LowStockItems { get; } = new();
+    public ObservableCollection<RecentOrderItem> RecentOrders { get; } = new();
+
+    public SeriesCollection RevenueSeries { get; }
+
+    public string[] RevenueLabels
+    {
+        get => _revenueLabels;
+        private set => SetProperty(ref _revenueLabels, value);
+    }
+
+    public bool HasRevenueData
+    {
+        get => _hasRevenueData;
+        private set => SetProperty(ref _hasRevenueData, value);
+    }
+
+    public bool HasTopProducts
+    {
+        get => _hasTopProducts;
+        private set => SetProperty(ref _hasTopProducts, value);
+    }
+
+    public bool HasLowStockItems
+    {
+        get => _hasLowStockItems;
+        private set => SetProperty(ref _hasLowStockItems, value);
+    }
+
+    public bool HasRecentOrders
+    {
+        get => _hasRecentOrders;
+        private set => SetProperty(ref _hasRecentOrders, value);
+    }
+
+    public Func<double, string> RevenueLabelFormatter { get; } =
+        val => val.ToString("N0") + " đ";
 
     public AsyncRelayCommand LoadCommand { get; }
     public AsyncRelayCommand GenerateReportCommand { get; }
     public RelayCommand TodayCommand { get; }
+    public RelayCommand YesterdayCommand { get; }
+    public RelayCommand ThisWeekCommand { get; }
     public RelayCommand ThisMonthCommand { get; }
 
     public DateTime? FromDate
@@ -108,6 +156,33 @@ public sealed class OverviewViewModel : ViewModelBase
         NewCustomers = metrics.NewCustomers;
         TopProducts.ResetWith(metrics.TopProducts);
         LowStockItems.ResetWith(metrics.LowStockItems);
+        RecentOrders.ResetWith(metrics.RecentOrders);
+        HasTopProducts = metrics.TopProducts.Count > 0;
+        HasLowStockItems = metrics.LowStockItems.Count > 0;
+        HasRecentOrders = metrics.RecentOrders.Count > 0;
+
+        RevenueSeries.Clear();
+        HasRevenueData = metrics.DailyRevenue.Count > 0;
+        if (HasRevenueData)
+        {
+            RevenueSeries.Add(new ColumnSeries
+            {
+                Title = "Doanh thu",
+                Values = new ChartValues<double>(
+                    metrics.DailyRevenue.Select(d => (double)d.Revenue)),
+                DataLabels = true,
+                FontSize = 11,
+                Foreground = System.Windows.Media.Brushes.Gray,
+                MaxColumnWidth = 40
+            });
+            RevenueLabels = metrics.DailyRevenue
+                .Select(d => d.Date.ToString("dd/MM"))
+                .ToArray();
+        }
+        else
+        {
+            RevenueLabels = [];
+        }
         StatusMessage = metrics.OrderCount == 0
             ? $"Không có dữ liệu bán hàng trong khoảng {metrics.From:dd/MM/yyyy} - {metrics.To:dd/MM/yyyy}."
             : $"Đã cập nhật báo cáo lúc {DateTime.Now:HH:mm:ss}.";
@@ -117,6 +192,24 @@ public sealed class OverviewViewModel : ViewModelBase
     {
         FromDate = DateTime.Today;
         ToDate = DateTime.Today;
+        GenerateReportCommand.Execute(null);
+    }
+
+    private void UseYesterday()
+    {
+        var yesterday = DateTime.Today.AddDays(-1);
+        FromDate = yesterday;
+        ToDate = yesterday;
+        GenerateReportCommand.Execute(null);
+    }
+
+    private void UseThisWeek()
+    {
+        var today = DateTime.Today;
+        var diff = (int)today.DayOfWeek - (int)DayOfWeek.Monday;
+        var monday = today.AddDays(diff < 0 ? -6 : -diff);
+        FromDate = monday;
+        ToDate = today;
         GenerateReportCommand.Execute(null);
     }
 

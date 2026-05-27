@@ -86,6 +86,32 @@ public sealed class OverviewService : IOverviewService
             .Take(10)
             .ToListAsync();
 
+        var recentOrders = await _dbContext.Orders
+            .AsNoTracking()
+            .Include(o => o.Customer)
+            .Where(o => o.NgayLap >= start && o.NgayLap < exclusiveEnd)
+            .OrderByDescending(o => o.NgayLap)
+            .ThenByDescending(o => o.MaDonHang)
+            .Take(20)
+            .Select(o => new RecentOrderItem(
+                o.MaDonHang,
+                o.Customer != null ? o.Customer.TenKH : "(Khách lẻ)",
+                o.NgayLap,
+                o.TongTien))
+            .ToListAsync();
+
+        var rawOrders = await _dbContext.Orders
+            .AsNoTracking()
+            .Where(o => o.NgayLap >= start && o.NgayLap < exclusiveEnd)
+            .Select(o => new { o.NgayLap, o.TongTien })
+            .ToListAsync();
+
+        var dailyRevenue = rawOrders
+            .GroupBy(o => o.NgayLap.Date)
+            .Select(g => new DailyRevenueItem(g.Key, g.Sum(o => o.TongTien)))
+            .OrderBy(d => d.Date)
+            .ToList();
+
         return new OverviewMetrics(
             start,
             end,
@@ -95,6 +121,8 @@ public sealed class OverviewService : IOverviewService
             lowStockCount,
             newCustomers,
             topProducts,
-            lowStockItems);
+            lowStockItems,
+            recentOrders,
+            dailyRevenue);
     }
 }

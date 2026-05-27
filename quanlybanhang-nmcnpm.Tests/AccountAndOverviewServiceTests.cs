@@ -23,7 +23,7 @@ public sealed class AccountAndOverviewServiceTests
             "bad-email",
             roleId,
             true,
-            "admin"));
+            "123456"));
         Assert.False(invalid.IsValid);
 
         var created = await service.CreateAsync(new AccountInput(
@@ -33,7 +33,7 @@ public sealed class AccountAndOverviewServiceTests
             "cashier.demo@example.local",
             roleId,
             true,
-            "admin"));
+            "123456"));
 
         Assert.True(created.IsValid, created.ErrorMessage);
         Assert.Equal("cashier.demo", created.Value!.Username);

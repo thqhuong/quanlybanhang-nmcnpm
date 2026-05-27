@@ -21,8 +21,9 @@ public sealed class AccountsViewModel : ViewModelBase
         _accountService = accountService;
         LoadCommand = new AsyncRelayCommand(LoadAsync);
         AddCommand = new AsyncRelayCommand(AddAsync);
-        UpdateCommand = new AsyncRelayCommand(UpdateAsync, () => SelectedAccount is not null);
-        ToggleActiveCommand = new AsyncRelayCommand(ToggleActiveAsync, () => SelectedAccount is not null);
+        UpdateCommand = new AsyncRelayCommand(UpdateAsync);
+        ToggleActiveCommand = new AsyncRelayCommand(ToggleActiveAsync);
+        DeleteCommand = new AsyncRelayCommand(DeleteAsync);
         NewCommand = new RelayCommand(ClearForm);
     }
 
@@ -33,6 +34,7 @@ public sealed class AccountsViewModel : ViewModelBase
     public AsyncRelayCommand AddCommand { get; }
     public AsyncRelayCommand UpdateCommand { get; }
     public AsyncRelayCommand ToggleActiveCommand { get; }
+    public AsyncRelayCommand DeleteCommand { get; }
     public RelayCommand NewCommand { get; }
 
     public AccountListItem? SelectedAccount
@@ -43,8 +45,6 @@ public sealed class AccountsViewModel : ViewModelBase
             if (SetProperty(ref _selectedAccount, value))
             {
                 FillForm(value);
-                UpdateCommand.RaiseCanExecuteChanged();
-                ToggleActiveCommand.RaiseCanExecuteChanged();
             }
         }
     }
@@ -125,6 +125,7 @@ public sealed class AccountsViewModel : ViewModelBase
     {
         if (SelectedAccount is null)
         {
+            StatusMessage = "Vui lòng chọn tài khoản cần cập nhật.";
             return;
         }
 
@@ -145,6 +146,18 @@ public sealed class AccountsViewModel : ViewModelBase
     private async Task ToggleActiveAsync()
     {
         if (SelectedAccount is null)
+        {
+            StatusMessage = "Vui lòng chọn tài khoản.";
+            return;
+        }
+
+        var action = SelectedAccount.IsActive ? "khóa" : "mở khóa";
+        var confirm = System.Windows.MessageBox.Show(
+            $"Bạn có chắc muốn {action} tài khoản '{SelectedAccount.Username}'?",
+            "Xác nhận",
+            System.Windows.MessageBoxButton.YesNo,
+            System.Windows.MessageBoxImage.Question);
+        if (confirm != System.Windows.MessageBoxResult.Yes)
         {
             return;
         }
@@ -168,6 +181,41 @@ public sealed class AccountsViewModel : ViewModelBase
         }
 
         return new AccountInput(Username, FullName, Phone, Email, SelectedRole.Id, IsActive, Password);
+    }
+
+    private async Task DeleteAsync()
+    {
+        if (SelectedAccount is null)
+        {
+            StatusMessage = "Vui lòng chọn tài khoản cần xóa.";
+            return;
+        }
+
+        if (SelectedAccount.Username == "admin")
+        {
+            System.Windows.MessageBox.Show("Không thể xóa tài khoản admin.", "Thông báo",
+                System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Warning);
+            return;
+        }
+
+        var confirm = System.Windows.MessageBox.Show(
+            $"Bạn có chắc muốn xóa tài khoản '{SelectedAccount.Username}'?",
+            "Xác nhận xóa",
+            System.Windows.MessageBoxButton.YesNo,
+            System.Windows.MessageBoxImage.Warning);
+        if (confirm != System.Windows.MessageBoxResult.Yes)
+        {
+            return;
+        }
+
+        var deleted = SelectedAccount;
+        var result = await _accountService.DeleteAsync(deleted.Id);
+        StatusMessage = result.IsValid ? "Đã xóa tài khoản." : result.ErrorMessage ?? "";
+        if (result.IsValid)
+        {
+            ClearForm();
+            Accounts.Remove(deleted);
+        }
     }
 
     private void FillForm(AccountListItem? account)

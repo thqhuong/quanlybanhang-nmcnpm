@@ -42,7 +42,7 @@ public sealed class SalesViewModel : ViewModelBase
         _sessionService = sessionService;
         LoadCommand = new AsyncRelayCommand(LoadAsync);
         AddProductCommand = new AsyncRelayCommand(AddProductAsync);
-        RemoveLineCommand = new RelayCommand(RemoveSelectedLine, () => SelectedCartLine is not null);
+        RemoveLineCommand = new RelayCommand(RemoveSelectedLine);
         CheckoutCommand = new AsyncRelayCommand(CheckoutAsync, () => CartLines.Count > 0);
         NewOrderCommand = new RelayCommand(ClearOrder);
         ExportReceiptCommand = new AsyncRelayCommand(ExportReceiptAsync, () => LastReceipt is not null);
@@ -100,10 +100,7 @@ public sealed class SalesViewModel : ViewModelBase
         get => _selectedCartLine;
         set
         {
-            if (SetProperty(ref _selectedCartLine, value))
-            {
-                RemoveLineCommand.RaiseCanExecuteChanged();
-            }
+            SetProperty(ref _selectedCartLine, value);
         }
     }
 
@@ -371,6 +368,7 @@ public sealed class SalesViewModel : ViewModelBase
     {
         if (SelectedCartLine is null)
         {
+            StatusMessage = "Vui lòng chọn mặt hàng cần xóa.";
             return;
         }
 
