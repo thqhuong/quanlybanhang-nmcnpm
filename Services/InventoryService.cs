@@ -25,17 +25,17 @@ public sealed class InventoryService : IInventoryService
             .ToListAsync();
     }
 
-    public async Task<ValidationResult<decimal>> CreateReceiptAsync(CreateInventoryReceiptInput input)
+    public async Task<ValidationResult<int>> CreateReceiptAsync(CreateInventoryReceiptInput input)
     {
         if (!HasWarehouseAccess())
         {
-            return ValidationResult<decimal>.Failure("Bạn không có quyền truy cập kho.");
+            return ValidationResult<int>.Failure("Bạn không có quyền truy cập kho.");
         }
 
         var validation = await ValidateAsync(input);
         if (!validation.IsValid)
         {
-            return ValidationResult<decimal>.Failure(validation.ErrorMessage!);
+            return ValidationResult<int>.Failure(validation.ErrorMessage!);
         }
 
         var productIds = input.Lines.Select(line => line.ProductId).Distinct().ToList();
@@ -70,7 +70,7 @@ public sealed class InventoryService : IInventoryService
         _dbContext.InventoryReceipts.Add(receipt);
         await _dbContext.SaveChangesAsync();
 
-        return ValidationResult<decimal>.Success(total);
+        return ValidationResult<int>.Success(receipt.MaPhieuNhapKho);
     }
 
     private async Task<ValidationResult> ValidateAsync(CreateInventoryReceiptInput input)

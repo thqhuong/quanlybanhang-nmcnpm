@@ -29,7 +29,7 @@ public interface IOrderService
 public interface IInventoryService
 {
     Task<IReadOnlyList<CategoryOption>> GetSuppliersAsync();
-    Task<ValidationResult<decimal>> CreateReceiptAsync(CreateInventoryReceiptInput input);
+    Task<ValidationResult<int>> CreateReceiptAsync(CreateInventoryReceiptInput input);
 }
 
 public interface IAccountService

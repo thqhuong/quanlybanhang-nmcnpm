@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using System.Windows;
 using quanlybanhang_nmcnpm.Services;
 
 namespace quanlybanhang_nmcnpm.ViewModels;
@@ -12,7 +13,7 @@ public sealed class CustomersViewModel : ViewModelBase
     private string _phone = "";
     private string _email = "";
     private string _address = "";
-    private string _pointsText = "0";
+    private string _pointsText = "";
     private DateTime? _birthDate;
     private string _statusMessage = "";
 
@@ -22,8 +23,8 @@ public sealed class CustomersViewModel : ViewModelBase
         LoadCommand = new AsyncRelayCommand(LoadAsync);
         SearchCommand = new AsyncRelayCommand(SearchAsync);
         AddCommand = new AsyncRelayCommand(AddAsync);
-        UpdateCommand = new AsyncRelayCommand(UpdateAsync, () => SelectedCustomer is not null);
-        DeleteCommand = new AsyncRelayCommand(DeleteAsync, () => SelectedCustomer is not null);
+        UpdateCommand = new AsyncRelayCommand(UpdateAsync);
+        DeleteCommand = new AsyncRelayCommand(DeleteAsync);
         NewCommand = new RelayCommand(ClearForm);
     }
 
@@ -50,8 +51,6 @@ public sealed class CustomersViewModel : ViewModelBase
             if (SetProperty(ref _selectedCustomer, value))
             {
                 FillForm(value);
-                UpdateCommand.RaiseCanExecuteChanged();
-                DeleteCommand.RaiseCanExecuteChanged();
             }
         }
     }
@@ -134,6 +133,7 @@ public sealed class CustomersViewModel : ViewModelBase
     {
         if (SelectedCustomer is null)
         {
+            StatusMessage = "Vui lòng chọn khách hàng cần cập nhật.";
             return;
         }
 
@@ -143,11 +143,13 @@ public sealed class CustomersViewModel : ViewModelBase
             return;
         }
 
-        var result = await _customerService.UpdateAsync(SelectedCustomer.Id, input);
+        var updatedId = SelectedCustomer.Id;
+        var result = await _customerService.UpdateAsync(updatedId, input);
         StatusMessage = result.IsValid ? "Đã cập nhật khách hàng." : result.ErrorMessage ?? "";
         if (result.IsValid)
         {
             await SearchAsync();
+            SelectedCustomer = Customers.FirstOrDefault(c => c.Id == updatedId);
         }
     }
 
@@ -155,15 +157,29 @@ public sealed class CustomersViewModel : ViewModelBase
     {
         if (SelectedCustomer is null)
         {
+            StatusMessage = "Vui lòng chọn khách hàng cần xóa.";
             return;
         }
 
-        var result = await _customerService.DeleteAsync(SelectedCustomer.Id);
+        var confirm = MessageBox.Show(
+            $"Bạn có chắc muốn xóa \"{SelectedCustomer.Name}\"?",
+            "Xác nhận xóa",
+            MessageBoxButton.YesNo,
+            MessageBoxImage.Warning);
+        if (confirm != MessageBoxResult.Yes)
+        {
+            return;
+        }
+
+        var deleted = SelectedCustomer;
+        var result = await _customerService.DeleteAsync(deleted.Id);
         StatusMessage = result.IsValid ? "Đã xóa khách hàng." : result.ErrorMessage ?? "";
         if (result.IsValid)
         {
             ClearForm();
-            await SearchAsync();
+            Customers.Remove(deleted);
+            OnPropertyChanged(nameof(CustomerCount));
+            StatusMessage = $"Đã xóa khách hàng. Tổng số khách hàng: {CustomerCount}";
         }
     }
 
@@ -201,7 +217,7 @@ public sealed class CustomersViewModel : ViewModelBase
         Email = "";
         Address = "";
         BirthDate = null;
-        PointsText = "0";
+        PointsText = "";
         StatusMessage = "";
     }
 }

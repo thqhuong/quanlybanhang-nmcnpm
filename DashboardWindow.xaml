@@ -5,7 +5,8 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d"
         Title="Dashboard" Height="768" Width="1100"
-        WindowStartupLocation="CenterScreen">
+        WindowStartupLocation="CenterScreen"
+        Icon="Assets/app.ico">
     <Window.Resources>
         <Style x:Key="SidebarMenuItem" TargetType="RadioButton">
             <Setter Property="Background" Value="Transparent"/>

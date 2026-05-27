@@ -65,10 +65,16 @@
             </StackPanel>
         </Border>
 
-        <ListView Grid.Row="3" ItemsSource="{Binding Customers}" SelectedItem="{Binding SelectedCustomer}" BorderBrush="#E0E0E0" BorderThickness="1" AlternationCount="2">
+        <ListView Grid.Row="3" ItemsSource="{Binding Customers}" SelectedItem="{Binding SelectedCustomer}" BorderBrush="#E0E0E0" BorderThickness="1" AlternationCount="99999">
             <ListView.View>
                 <GridView>
-                    <GridViewColumn Header="#" Width="45" DisplayMemberBinding="{Binding Id}"/>
+                    <GridViewColumn Header="#" Width="45">
+                        <GridViewColumn.CellTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType=ListViewItem}, Path=(ItemsControl.AlternationIndex), Converter={StaticResource AddOneConverter}}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </DataTemplate>
+                        </GridViewColumn.CellTemplate>
+                    </GridViewColumn>
                     <GridViewColumn Header="Số điện thoại" Width="150" DisplayMemberBinding="{Binding Phone}"/>
                     <GridViewColumn Header="Tên khách hàng" Width="220" DisplayMemberBinding="{Binding Name}"/>
                     <GridViewColumn Header="Email" Width="200" DisplayMemberBinding="{Binding Email}"/>
