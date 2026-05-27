@@ -1,5 +1,6 @@
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
 using Microsoft.Extensions.DependencyInjection;
 using quanlybanhang_nmcnpm.Services;
 using quanlybanhang_nmcnpm.Views;
@@ -26,6 +27,8 @@ public partial class DashboardWindow : Window
         txtTitle.Text = $"Hệ thống Quản lý Bán hàng v1.0 - [Chế độ: {roleName}]";
         ApplyRolePermissions();
         SelectDefaultView();
+
+        PreviewKeyDown += DashboardWindow_PreviewKeyDown;
     }
 
     private void Menu_Checked(object sender, RoutedEventArgs e)
@@ -118,6 +121,35 @@ public partial class DashboardWindow : Window
             VerticalAlignment = VerticalAlignment.Center,
             FontSize = 20
         };
+    }
+
+    private void HelpButton_Click(object sender, RoutedEventArgs e)
+    {
+        HelpPopup.IsOpen = !HelpPopup.IsOpen;
+    }
+
+    private void DashboardWindow_PreviewKeyDown(object sender, KeyEventArgs e)
+    {
+        if (e.KeyboardDevice.Modifiers != ModifierKeys.Control)
+        {
+            return;
+        }
+
+        var menuMap = new Dictionary<Key, RadioButton>
+        {
+            { Key.D1, MenuTongQuan },
+            { Key.D2, MenuBanHang },
+            { Key.D3, MenuTaiKhoan },
+            { Key.D4, MenuKhachHang },
+            { Key.D5, MenuHangHoa },
+            { Key.D6, MenuPhieuNhap },
+        };
+
+        if (menuMap.TryGetValue(e.Key, out var menu) && menu.Visibility == Visibility.Visible)
+        {
+            menu.IsChecked = true;
+            e.Handled = true;
+        }
     }
 
     private void Logout_Click(object sender, RoutedEventArgs e)

@@ -16,11 +16,11 @@
                                 BorderThickness="{TemplateBinding BorderThickness}"
                                 SnapsToDevicePixels="True">
                             <Grid>
-                            <ScrollViewer x:Name="PART_ContentHost" />
+                            <ScrollViewer x:Name="PART_ContentHost" Padding="{TemplateBinding Padding}" />
                             <TextBlock Text="{TemplateBinding Tag}"
                                        Foreground="#999999"
                                        IsHitTestVisible="False"
-                                       Margin="8,0,0,0"
+                                       Margin="{TemplateBinding Padding}"
                                        VerticalAlignment="Center">
                                 <TextBlock.Style>
                                     <Style TargetType="TextBlock">
@@ -53,11 +53,11 @@
                                 BorderThickness="{TemplateBinding BorderThickness}"
                                 SnapsToDevicePixels="True">
                             <Grid>
-                            <ScrollViewer x:Name="PART_ContentHost" />
+                            <ScrollViewer x:Name="PART_ContentHost" Padding="{TemplateBinding Padding}" />
                             <TextBlock Text="{TemplateBinding Tag}"
                                        Foreground="#999999"
                                        IsHitTestVisible="False"
-                                       Margin="8,0,0,0"
+                                       Margin="{TemplateBinding Padding}"
                                        VerticalAlignment="Center">
                                 <TextBlock.Style>
                                     <Style TargetType="TextBlock">

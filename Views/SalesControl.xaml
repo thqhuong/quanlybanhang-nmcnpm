@@ -5,6 +5,9 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              mc:Ignorable="d"
              d:DesignHeight="600" d:DesignWidth="1000" Background="#F1F3F5">
+    <UserControl.InputBindings>
+        <KeyBinding Key="F9" Command="{Binding CheckoutCommand}"/>
+    </UserControl.InputBindings>
     <Grid Margin="10">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>

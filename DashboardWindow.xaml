@@ -51,6 +51,24 @@
                     </Border>
                     <TextBlock x:Name="txtTitle" Text="Hệ thống Quản lý Bán hàng v1.0" Foreground="White" FontWeight="Bold" FontSize="14" VerticalAlignment="Center"/>
                 </StackPanel>
+                <Button x:Name="HelpButton" Background="Transparent" BorderThickness="0" Cursor="Hand" HorizontalAlignment="Right" VerticalAlignment="Center" Click="HelpButton_Click">
+                    <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE897;" FontSize="18" Foreground="White" VerticalAlignment="Center"/>
+                </Button>
+                <Popup x:Name="HelpPopup" PlacementTarget="{Binding ElementName=HelpButton}" Placement="Bottom" StaysOpen="False" AllowsTransparency="True">
+                    <Border Background="White" BorderBrush="#BDBDBD" BorderThickness="1" CornerRadius="4" Padding="15" MaxWidth="300">
+                        <StackPanel>
+                            <TextBlock Text="Phím tắt" FontWeight="Bold" FontSize="14" Foreground="#333" Margin="0,0,0,10"/>
+                            <TextBlock Text="Ctrl+1: Tổng quan" FontSize="12" Foreground="#555" Margin="0,0,0,4"/>
+                            <TextBlock Text="Ctrl+2: Bán hàng (POS)" FontSize="12" Foreground="#555" Margin="0,0,0,4"/>
+                            <TextBlock Text="Ctrl+3: Tài khoản" FontSize="12" Foreground="#555" Margin="0,0,0,4"/>
+                            <TextBlock Text="Ctrl+4: Khách hàng" FontSize="12" Foreground="#555" Margin="0,0,0,4"/>
+                            <TextBlock Text="Ctrl+5: Hàng hóa" FontSize="12" Foreground="#555" Margin="0,0,0,4"/>
+                            <TextBlock Text="Ctrl+6: Phiếu nhập kho" FontSize="12" Foreground="#555" Margin="0,0,0,4"/>
+                            <Border Background="#E0E0E0" Height="1" Margin="0,8"/>
+                            <TextBlock Text="F9: Thanh toán (POS)" FontSize="12" Foreground="#555" Margin="0,0,0,4"/>
+                        </StackPanel>
+                    </Border>
+                </Popup>
             </Grid>
         </Border>
 

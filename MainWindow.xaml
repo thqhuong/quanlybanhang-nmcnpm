@@ -54,7 +54,7 @@
         <TextBlock Text="Vui lòng đăng nhập để tiếp tục" FontSize="16" Foreground="#666666" HorizontalAlignment="Center" Margin="0,0,0,30"/>
 
         <Grid Margin="0,0,0,12" Width="172" Height="36">
-            <TextBox x:Name="UsernameBox" Height="36" VerticalContentAlignment="Center" Background="Transparent"/>
+            <TextBox x:Name="UsernameBox" Height="36" VerticalContentAlignment="Center" Background="Transparent" Padding="10,0"/>
             <TextBlock Text="Tên đăng nhập" Foreground="#999" VerticalAlignment="Center" Margin="10,0,0,0" IsHitTestVisible="False">
                 <TextBlock.Style>
                     <Style TargetType="TextBlock">
@@ -69,10 +69,10 @@
             </TextBlock>
         </Grid>
         <Grid Margin="0,0,0,12" Width="172" Height="36">
-            <PasswordBox x:Name="PasswordBox" Height="36" VerticalContentAlignment="Center" Background="Transparent" GotFocus="PasswordBox_GotFocus" LostFocus="PasswordBox_LostFocus"/>
+            <PasswordBox x:Name="PasswordBox" Height="36" VerticalContentAlignment="Center" Background="Transparent" Padding="10,0" GotFocus="PasswordBox_GotFocus" LostFocus="PasswordBox_LostFocus"/>
             <TextBlock x:Name="PasswordPlaceholder" Text="Mật khẩu" Foreground="#999" VerticalAlignment="Center" Margin="10,0,0,0" IsHitTestVisible="False"/>
         </Grid>
-        <Button Style="{StaticResource RoleButtonStyle}" Click="Login_Click" Height="48" Padding="10,10, 30, 10" Margin="0" HorizontalAlignment="Center" HorizontalContentAlignment="Center">
+        <Button Style="{StaticResource RoleButtonStyle}" Click="Login_Click" Height="48" Padding="10,10, 30, 10" Margin="0" HorizontalAlignment="Center" HorizontalContentAlignment="Center" IsDefault="True">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="40"/>
@@ -85,5 +85,9 @@
             </Grid>
         </Button>
         <TextBlock x:Name="StatusText" Text="" FontSize="14" Foreground="#C62828" HorizontalAlignment="Center" Margin="0,12,0,0"/>
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,8,0,0" ToolTip="Nhấn Enter để đăng nhập">
+            <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE897;" FontSize="12" Foreground="#999" VerticalAlignment="Center" Margin="0,0,5,0"/>
+            <TextBlock Text="Phím tắt: Enter để đăng nhập" FontSize="11" Foreground="#999" VerticalAlignment="Center"/>
+        </StackPanel>
     </StackPanel>
 </Window>
