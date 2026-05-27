@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using System.Globalization;
 using quanlybanhang_nmcnpm.Services;
 
 namespace quanlybanhang_nmcnpm.ViewModels;
@@ -13,6 +14,7 @@ public sealed class SalesViewModel : ViewModelBase
     private readonly List<ProductListItem> _products = new();
     private int _employeeId;
     private string _productCode = "";
+    private string _productName = "";
     private string _quantityText = "1";
     private CustomerListItem? _selectedCustomer;
     private CartLine? _selectedCartLine;
@@ -24,6 +26,7 @@ public sealed class SalesViewModel : ViewModelBase
     private decimal _change;
     private string _statusMessage = "";
     private OrderReceipt? _lastReceipt;
+    private decimal _vatRate;
 
     public SalesViewModel(
         IProductService productService,
@@ -44,10 +47,12 @@ public sealed class SalesViewModel : ViewModelBase
         NewOrderCommand = new RelayCommand(ClearOrder);
         ExportReceiptCommand = new AsyncRelayCommand(ExportReceiptAsync, () => LastReceipt is not null);
         PrintReceiptCommand = new RelayCommand(PrintReceipt, () => LastReceipt is not null);
+        SelectSuggestionCommand = new RelayCommand(() => SelectSuggestion(_selectedSuggestion), () => _selectedSuggestion is not null);
     }
 
     public ObservableCollection<CustomerListItem> Customers { get; } = new();
     public ObservableCollection<CartLine> CartLines { get; } = new();
+    public ObservableCollection<ProductListItem> SearchSuggestions { get; } = new();
 
     public AsyncRelayCommand LoadCommand { get; }
     public AsyncRelayCommand AddProductCommand { get; }
@@ -56,11 +61,26 @@ public sealed class SalesViewModel : ViewModelBase
     public RelayCommand NewOrderCommand { get; }
     public AsyncRelayCommand ExportReceiptCommand { get; }
     public RelayCommand PrintReceiptCommand { get; }
+    public RelayCommand SelectSuggestionCommand { get; }
 
     public string ProductCode
     {
         get => _productCode;
-        set => SetProperty(ref _productCode, value);
+        set
+        {
+            if (SetProperty(ref _productCode, value))
+                UpdateSuggestions();
+        }
+    }
+
+    public string ProductName
+    {
+        get => _productName;
+        set
+        {
+            if (SetProperty(ref _productName, value))
+                UpdateSuggestions();
+        }
     }
 
     public string QuantityText
@@ -141,6 +161,29 @@ public sealed class SalesViewModel : ViewModelBase
         set => SetProperty(ref _statusMessage, value);
     }
 
+    public string VatRateText => $"VAT ({_vatRate:N0}%):";
+
+    private bool _isSuggestionPopupOpen;
+    public bool IsSuggestionPopupOpen
+    {
+        get => _isSuggestionPopupOpen;
+        set => SetProperty(ref _isSuggestionPopupOpen, value);
+    }
+
+    private ProductListItem? _selectedSuggestion;
+    public ProductListItem? SelectedSuggestion
+    {
+        get => _selectedSuggestion;
+        set
+        {
+            if (SetProperty(ref _selectedSuggestion, value) && value is not null)
+            {
+                SelectSuggestion(value);
+                SelectSuggestionCommand.RaiseCanExecuteChanged();
+            }
+        }
+    }
+
     public OrderReceipt? LastReceipt
     {
         get => _lastReceipt;
@@ -163,6 +206,13 @@ public sealed class SalesViewModel : ViewModelBase
             ?? Customers.FirstOrDefault();
 
         _employeeId = _sessionService.CurrentUser?.Id ?? 0;
+        _vatRate = GetVatRate();
+    }
+
+    private static decimal GetVatRate()
+    {
+        var envValue = Environment.GetEnvironmentVariable("QLBH_VAT_RATE");
+        return decimal.TryParse(envValue, NumberStyles.Any, CultureInfo.InvariantCulture, out var rate) && rate > 0 ? rate : 8m;
     }
 
     private async Task AddProductAsync()
@@ -174,8 +224,16 @@ public sealed class SalesViewModel : ViewModelBase
         }
 
         var code = ProductCode.Trim();
-        var product = _products.FirstOrDefault(p =>
-            p.Code.Equals(code, StringComparison.OrdinalIgnoreCase));
+        var name = ProductName.Trim();
+        ProductListItem? product = null;
+
+        if (!string.IsNullOrEmpty(code))
+            product = _products.FirstOrDefault(p =>
+                p.Code.Equals(code, StringComparison.OrdinalIgnoreCase));
+
+        if (product is null && !string.IsNullOrEmpty(name))
+            product = _products.FirstOrDefault(p =>
+                p.Name.StartsWith(name, StringComparison.OrdinalIgnoreCase));
 
         if (product is null)
         {
@@ -201,11 +259,41 @@ public sealed class SalesViewModel : ViewModelBase
         }
 
         ProductCode = "";
+        ProductName = "";
         QuantityText = "1";
+        IsSuggestionPopupOpen = false;
         StatusMessage = "Đã thêm sản phẩm vào giỏ.";
         LastReceipt = null;
         RecalculateTotals();
         CheckoutCommand.RaiseCanExecuteChanged();
+    }
+
+    private void UpdateSuggestions()
+    {
+        var code = ProductCode.Trim().ToLowerInvariant();
+        var name = ProductName.Trim().ToLowerInvariant();
+
+        IEnumerable<ProductListItem> query = _products;
+
+        if (!string.IsNullOrEmpty(code))
+            query = query.Where(p => p.Code.ToLowerInvariant().Contains(code));
+
+        if (!string.IsNullOrEmpty(name))
+            query = query.Where(p => p.Name.ToLowerInvariant().Contains(name));
+
+        var results = query.Take(10).ToList();
+        SearchSuggestions.ResetWith(results);
+        IsSuggestionPopupOpen = results.Count > 0 && (!string.IsNullOrEmpty(code) || !string.IsNullOrEmpty(name));
+    }
+
+    private void SelectSuggestion(ProductListItem? product)
+    {
+        if (product is null)
+            return;
+
+        ProductCode = product.Code;
+        ProductName = product.Name;
+        IsSuggestionPopupOpen = false;
     }
 
     private async Task CheckoutAsync()
@@ -234,7 +322,7 @@ public sealed class SalesViewModel : ViewModelBase
             SelectedCustomer.Id,
             _employeeId,
             discount,
-            8m,
+            _vatRate,
             paidAmount,
             CartLines.Select(line => new OrderLineInput(line.ProductId, line.Quantity)).ToList()));
 
@@ -303,9 +391,11 @@ public sealed class SalesViewModel : ViewModelBase
     {
         CartLines.Clear();
         ProductCode = "";
+        ProductName = "";
         QuantityText = "1";
         DiscountText = "0";
         PaymentText = "0";
+        IsSuggestionPopupOpen = false;
         RecalculateTotals();
         CheckoutCommand.RaiseCanExecuteChanged();
     }
@@ -314,7 +404,7 @@ public sealed class SalesViewModel : ViewModelBase
     {
         Subtotal = CartLines.Sum(line => line.LineTotal);
         var discount = Math.Min(ParseMoney(DiscountText), Subtotal);
-        Vat = decimal.Round((Subtotal - discount) * 0.08m, 2);
+        Vat = decimal.Round((Subtotal - discount) * _vatRate / 100m, 2);
         Total = Subtotal - discount + Vat;
 
         var paid = ParseMoney(PaymentText);
@@ -333,7 +423,12 @@ public sealed class SalesViewModel : ViewModelBase
 
     private static decimal ParseMoney(string value)
     {
-        return decimal.TryParse(value, out var parsed) ? Math.Max(0m, parsed) : 0m;
+        if (string.IsNullOrWhiteSpace(value))
+            return 0m;
+        value = value.Trim().Replace(",", "");
+        return decimal.TryParse(value, NumberStyles.Any, CultureInfo.InvariantCulture, out var parsed)
+            ? Math.Max(0m, parsed)
+            : 0m;
     }
 }
 

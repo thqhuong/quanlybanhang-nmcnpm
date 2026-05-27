@@ -16,7 +16,7 @@
                 <TextBlock Text="BÁN HÀNG TẠI QUẦY" FontSize="16" FontWeight="Bold" Foreground="#004C99" VerticalAlignment="Center"/>
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
                     <Button Content="&#xE8A5; Đơn mới" Command="{Binding NewOrderCommand}" FontFamily="Segoe UI, Segoe MDL2 Assets" Background="#E0E0E0" BorderThickness="0" Padding="10,5" Height="30" Margin="0,0,8,0"/>
-                    <Button Content="&#xE749; In lại HĐ" FontFamily="Segoe UI, Segoe MDL2 Assets" Background="#E0E0E0" BorderThickness="0" Padding="10,5" Height="30"/>
+                    <Button Content="&#xE749; In lại HĐ" Command="{Binding PrintReceiptCommand}" FontFamily="Segoe UI, Segoe MDL2 Assets" Background="#E0E0E0" BorderThickness="0" Padding="10,5" Height="30"/>
                 </StackPanel>
             </Grid>
         </Border>
@@ -36,25 +36,60 @@
 
                     <Border Grid.Row="0" Background="#F8F9FA" Padding="15" BorderBrush="#E0E0E0" BorderThickness="0,0,0,1">
                         <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="100"/>
-                                <ColumnDefinition Width="100"/>
-                                <ColumnDefinition Width="100"/>
-                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+                            <Grid Grid.Row="0" x:Name="SearchArea">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="100"/>
+                                    <ColumnDefinition Width="100"/>
+                                    <ColumnDefinition Width="100"/>
+                                </Grid.ColumnDefinitions>
 
-                            <StackPanel Grid.Column="0" Margin="0,0,10,0">
-                                <TextBlock Text="Mã sản phẩm" FontSize="12" Foreground="#666666" Margin="0,0,0,5"/>
-                                <TextBox Text="{Binding ProductCode, UpdateSourceTrigger=PropertyChanged}" Height="38" VerticalContentAlignment="Center" BorderBrush="#0078D7" BorderThickness="2" Padding="10,0" Tag="Mã sản phẩm" Style="{StaticResource WatermarkTextBoxStyle}"/>
-                            </StackPanel>
+                                <StackPanel Grid.Column="0" Margin="0,0,10,0">
+                                    <TextBlock Text="Mã sản phẩm" FontSize="12" Foreground="#666666" Margin="0,0,0,5"/>
+                                    <TextBox Text="{Binding ProductCode, UpdateSourceTrigger=PropertyChanged}" Height="38" VerticalContentAlignment="Center" BorderBrush="#0078D7" BorderThickness="2" Padding="10,0" Tag="Mã sản phẩm" Style="{StaticResource WatermarkTextBoxStyle}"/>
+                                </StackPanel>
 
-                            <StackPanel Grid.Column="1" Margin="0,0,10,0">
-                                <TextBlock Text="Số lượng" FontSize="12" Foreground="#666666" Margin="0,0,0,5"/>
-                                <TextBox Text="{Binding QuantityText, UpdateSourceTrigger=PropertyChanged}" Height="38" TextAlignment="Center" VerticalContentAlignment="Center" BorderBrush="#CCCCCC" Tag="Số lượng" Style="{StaticResource WatermarkTextBoxStyle}"/>
-                            </StackPanel>
+                                <StackPanel Grid.Column="1" Margin="0,0,10,0">
+                                    <TextBlock Text="Tên sản phẩm" FontSize="12" Foreground="#666666" Margin="0,0,0,5"/>
+                                    <TextBox Text="{Binding ProductName, UpdateSourceTrigger=PropertyChanged}" Height="38" VerticalContentAlignment="Center" BorderBrush="#CCCCCC" Padding="10,0" Tag="Tên sản phẩm" Style="{StaticResource WatermarkTextBoxStyle}"/>
+                                </StackPanel>
 
-                            <Button Grid.Column="2" Command="{Binding AddProductCommand}" Background="#0078D7" Foreground="White" BorderThickness="0" Height="35" VerticalAlignment="Bottom" Content="Thêm"/>
-                            <Button Grid.Column="3" Command="{Binding RemoveLineCommand}" Background="#C62828" Foreground="White" BorderThickness="0" Height="35" VerticalAlignment="Bottom" Margin="8,0,0,0" Content="Xóa dòng"/>
+                                <StackPanel Grid.Column="2" Margin="0,0,10,0">
+                                    <TextBlock Text="Số lượng" FontSize="12" Foreground="#666666" Margin="0,0,0,5"/>
+                                    <TextBox Text="{Binding QuantityText, UpdateSourceTrigger=PropertyChanged}" Height="38" TextAlignment="Center" VerticalContentAlignment="Center" BorderBrush="#CCCCCC" Tag="Số lượng" Style="{StaticResource WatermarkTextBoxStyle}"/>
+                                </StackPanel>
+
+                                <Button Grid.Column="3" Command="{Binding AddProductCommand}" Background="#0078D7" Foreground="White" BorderThickness="0" Height="35" VerticalAlignment="Bottom" Content="Thêm"/>
+                                <Button Grid.Column="4" Command="{Binding RemoveLineCommand}" Background="#C62828" Foreground="White" BorderThickness="0" Height="35" VerticalAlignment="Bottom" Margin="8,0,0,0" Content="Xóa dòng"/>
+                            </Grid>
+
+                            <Popup Grid.Row="1" IsOpen="{Binding IsSuggestionPopupOpen}" Placement="Bottom" PlacementTarget="{Binding ElementName=SearchArea}" StaysOpen="False" MaxHeight="200" Width="500">
+                                <Border BorderBrush="#CCCCCC" BorderThickness="1" Background="White">
+                                    <ListView ItemsSource="{Binding SearchSuggestions}" SelectedItem="{Binding SelectedSuggestion}">
+                                        <ListView.ItemTemplate>
+                                            <DataTemplate>
+                                                <Grid Margin="5">
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="100"/>
+                                                        <ColumnDefinition Width="*"/>
+                                                        <ColumnDefinition Width="100"/>
+                                                        <ColumnDefinition Width="80"/>
+                                                    </Grid.ColumnDefinitions>
+                                                    <TextBlock Grid.Column="0" Text="{Binding Code}" FontWeight="SemiBold" Foreground="#0078D7"/>
+                                                    <TextBlock Grid.Column="1" Text="{Binding Name}"/>
+                                                    <TextBlock Grid.Column="2" Text="{Binding Price, StringFormat={}{0:N0} đ}" HorizontalAlignment="Right"/>
+                                                    <TextBlock Grid.Column="3" Text="{Binding Stock, StringFormat=Tồn: {0}}" HorizontalAlignment="Right" Foreground="#666666"/>
+                                                </Grid>
+                                            </DataTemplate>
+                                        </ListView.ItemTemplate>
+                                    </ListView>
+                                </Border>
+                            </Popup>
                         </Grid>
                     </Border>
 
@@ -131,7 +166,7 @@
                             </Grid>
 
                             <Grid>
-                                <TextBlock Text="VAT (8%):" Foreground="#666666"/>
+                                <TextBlock Text="{Binding VatRateText}" Foreground="#666666"/>
                                 <TextBlock Text="{Binding Vat, StringFormat={}{0:N0} đ}" FontWeight="Bold" HorizontalAlignment="Right"/>
                             </Grid>
                         </StackPanel>

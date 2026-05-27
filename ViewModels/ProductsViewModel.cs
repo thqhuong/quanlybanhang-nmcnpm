@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using System.Windows;
 using quanlybanhang_nmcnpm.Services;
 
 namespace quanlybanhang_nmcnpm.ViewModels;
@@ -11,9 +12,9 @@ public sealed class ProductsViewModel : ViewModelBase
     private ProductListItem? _selectedProduct;
     private string _code = "";
     private string _name = "";
-    private string _unit = "Cái";
-    private string _priceText = "0";
-    private string _stockText = "0";
+    private string _unit = "";
+    private string _priceText = "";
+    private string _stockText = "";
     private string _statusMessage = "";
 
     public ProductsViewModel(IProductService productService)
@@ -22,9 +23,11 @@ public sealed class ProductsViewModel : ViewModelBase
         LoadCommand = new AsyncRelayCommand(LoadAsync);
         SearchCommand = new AsyncRelayCommand(SearchAsync);
         AddCommand = new AsyncRelayCommand(AddAsync);
-        UpdateCommand = new AsyncRelayCommand(UpdateAsync, () => SelectedProduct is not null);
-        DeleteCommand = new AsyncRelayCommand(DeleteAsync, () => SelectedProduct is not null);
+        UpdateCommand = new AsyncRelayCommand(UpdateAsync);
+        DeleteCommand = new AsyncRelayCommand(DeleteAsync);
         NewCommand = new RelayCommand(ClearForm);
+        AddCategoryCommand = new AsyncRelayCommand(AddCategoryAsync);
+        CancelAddCategoryCommand = new RelayCommand(CancelAddCategory);
     }
 
     public ObservableCollection<ProductListItem> Products { get; } = new();
@@ -36,6 +39,8 @@ public sealed class ProductsViewModel : ViewModelBase
     public AsyncRelayCommand UpdateCommand { get; }
     public AsyncRelayCommand DeleteCommand { get; }
     public RelayCommand NewCommand { get; }
+    public AsyncRelayCommand AddCategoryCommand { get; }
+    public RelayCommand CancelAddCategoryCommand { get; }
 
     public string SearchText
     {
@@ -43,10 +48,36 @@ public sealed class ProductsViewModel : ViewModelBase
         set => SetProperty(ref _searchText, value);
     }
 
+    private bool _isAddingCategory;
+    private string _newCategoryName = "";
+
     public CategoryOption? SelectedCategory
     {
         get => _selectedCategory;
-        set => SetProperty(ref _selectedCategory, value);
+        set
+        {
+            if (SetProperty(ref _selectedCategory, value))
+            {
+                if (value?.Id == -1)
+                {
+                    IsAddingCategory = true;
+                    NewCategoryName = "";
+                    SelectedCategory = Categories.FirstOrDefault(c => c.Id == 0);
+                }
+            }
+        }
+    }
+
+    public bool IsAddingCategory
+    {
+        get => _isAddingCategory;
+        set => SetProperty(ref _isAddingCategory, value);
+    }
+
+    public string NewCategoryName
+    {
+        get => _newCategoryName;
+        set => SetProperty(ref _newCategoryName, value);
     }
 
     public ProductListItem? SelectedProduct
@@ -104,9 +135,39 @@ public sealed class ProductsViewModel : ViewModelBase
     private async Task LoadAsync()
     {
         var categories = await _productService.GetCategoriesAsync();
-        Categories.ResetWith(new[] { new CategoryOption(0, "Tất cả nhóm") }.Concat(categories));
-        SelectedCategory ??= Categories.FirstOrDefault();
+        Categories.ResetWith(new[] { new CategoryOption(0, "Tất cả nhóm") }.Concat(categories).Append(new CategoryOption(-1, "+ Thêm nhóm mới")));
+        SelectedCategory ??= Categories.FirstOrDefault(c => c.Id == 0);
         await SearchAsync();
+    }
+
+    private async Task AddCategoryAsync()
+    {
+        var name = NewCategoryName.Trim();
+        if (string.IsNullOrWhiteSpace(name))
+        {
+            StatusMessage = "Vui lòng nhập tên nhóm hàng mới.";
+            return;
+        }
+
+        var result = await _productService.CreateCategoryAsync(name);
+        if (!result.IsValid)
+        {
+            StatusMessage = result.ErrorMessage ?? "";
+            return;
+        }
+
+        IsAddingCategory = false;
+        NewCategoryName = "";
+        StatusMessage = $"Đã thêm nhóm '{result.Value!.Name}'.";
+        var categories = await _productService.GetCategoriesAsync();
+        Categories.ResetWith(new[] { new CategoryOption(0, "Tất cả nhóm") }.Concat(categories).Append(new CategoryOption(-1, "+ Thêm nhóm mới")));
+        SelectedCategory = Categories.FirstOrDefault(c => c.Id == result.Value.Id);
+    }
+
+    private void CancelAddCategory()
+    {
+        IsAddingCategory = false;
+        NewCategoryName = "";
     }
 
     private async Task SearchAsync()
@@ -131,6 +192,7 @@ public sealed class ProductsViewModel : ViewModelBase
         if (result.IsValid)
         {
             ClearForm();
+            SelectedCategory = Categories.FirstOrDefault(c => c.Id == 0);
             await SearchAsync();
         }
     }
@@ -139,6 +201,7 @@ public sealed class ProductsViewModel : ViewModelBase
     {
         if (SelectedProduct is null)
         {
+            StatusMessage = "Vui lòng chọn sản phẩm cần cập nhật.";
             return;
         }
 
@@ -148,11 +211,18 @@ public sealed class ProductsViewModel : ViewModelBase
             return;
         }
 
-        var result = await _productService.UpdateAsync(SelectedProduct.Id, input);
+        var updatedId = SelectedProduct.Id;
+        var result = await _productService.UpdateAsync(updatedId, input);
         StatusMessage = result.IsValid ? "Đã cập nhật sản phẩm." : result.ErrorMessage ?? "";
         if (result.IsValid)
         {
+            SelectedCategory = Categories.FirstOrDefault(c => c.Id == 0);
             await SearchAsync();
+            SelectedProduct = Products.FirstOrDefault(p => p.Id == updatedId);
+        }
+        else if (result.ErrorMessage == "Không tìm thấy sản phẩm.")
+        {
+            StatusMessage = "Sản phẩm chưa có trong cơ sở dữ liệu.";
         }
     }
 
@@ -160,15 +230,29 @@ public sealed class ProductsViewModel : ViewModelBase
     {
         if (SelectedProduct is null)
         {
+            StatusMessage = "Vui lòng chọn sản phẩm cần xóa.";
             return;
         }
 
-        var result = await _productService.DeleteAsync(SelectedProduct.Id);
+        var confirm = MessageBox.Show(
+            $"Bạn có chắc muốn xóa \"{SelectedProduct.Name}\"?",
+            "Xác nhận xóa",
+            MessageBoxButton.YesNo,
+            MessageBoxImage.Warning);
+        if (confirm != MessageBoxResult.Yes)
+        {
+            return;
+        }
+
+        var deleted = SelectedProduct;
+        var result = await _productService.DeleteAsync(deleted.Id);
         StatusMessage = result.IsValid ? "Đã xóa sản phẩm." : result.ErrorMessage ?? "";
         if (result.IsValid)
         {
             ClearForm();
-            await SearchAsync();
+            Products.Remove(deleted);
+            OnPropertyChanged(nameof(ProductCount));
+            StatusMessage = $"Đã xóa sản phẩm. Tổng số bản ghi: {ProductCount}";
         }
     }
 
@@ -209,8 +293,8 @@ public sealed class ProductsViewModel : ViewModelBase
         Code = product.Code;
         Name = product.Name;
         Unit = product.Unit;
-        PriceText = product.Price.ToString("0.##");
-        StockText = product.Stock.ToString();
+        PriceText = product.Price == 0 ? "" : product.Price.ToString("0.##");
+        StockText = product.Stock == 0 ? "" : product.Stock.ToString();
         SelectedCategory = Categories.FirstOrDefault(c => c.Name == product.Category) ?? SelectedCategory;
     }
 
@@ -219,9 +303,9 @@ public sealed class ProductsViewModel : ViewModelBase
         SelectedProduct = null;
         Code = "";
         Name = "";
-        Unit = "Cái";
-        PriceText = "0";
-        StockText = "0";
+        Unit = "";
+        PriceText = "";
+        StockText = "";
         StatusMessage = "";
     }
 }

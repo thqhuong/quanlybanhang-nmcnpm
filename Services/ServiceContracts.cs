@@ -5,6 +5,7 @@ public interface IProductService
     Task<IReadOnlyList<ProductListItem>> GetAllAsync();
     Task<IReadOnlyList<ProductListItem>> SearchAsync(string? searchText, int? categoryId = null);
     Task<IReadOnlyList<CategoryOption>> GetCategoriesAsync();
+    Task<ValidationResult<CategoryOption>> CreateCategoryAsync(string name);
     Task<ValidationResult<ProductListItem>> CreateAsync(ProductInput input);
     Task<ValidationResult<ProductListItem>> UpdateAsync(int id, ProductInput input);
     Task<ValidationResult> DeleteAsync(int id);

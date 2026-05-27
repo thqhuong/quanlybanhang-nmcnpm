@@ -1,3 +1,4 @@
+using System.Threading.Tasks;
 using System.Windows;
 using Microsoft.Extensions.DependencyInjection;
 using quanlybanhang_nmcnpm.Database;
@@ -22,7 +23,7 @@ public partial class App : Application
         _serviceProvider = services.BuildServiceProvider();
     }
 
-    protected override async void OnStartup(StartupEventArgs e)
+        protected override async void OnStartup(StartupEventArgs e)
     {
         base.OnStartup(e);
 
@@ -32,15 +33,21 @@ public partial class App : Application
             return;
         }
 
+        var splash = new SplashWindow();
+        splash.Show();
+
         try
         {
             await _serviceProvider.InitializeDatabaseAsync();
+            await Task.Delay(500);
             var mainWindow = new MainWindow(_serviceProvider);
             mainWindow.Show();
+            splash.Close();
         }
         catch (Exception ex)
         {
-            MessageBox.Show($"Lỗi khởi tạo cơ sở dữ liệu: {ex.Message}", "Lỗi");
+            splash.Close();
+            MessageBox.Show($"Lỗi khởi tạo: {ex.Message}", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
             Shutdown(1);
         }
     }

@@ -26,18 +26,33 @@
 
         <Border Grid.Row="1" Background="#F8F9FA" BorderBrush="#E0E0E0" BorderThickness="1" Padding="10" Margin="0,0,0,10">
             <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="150"/>
-                    <ColumnDefinition Width="190"/>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="90"/>
-                </Grid.ColumnDefinitions>
-                <TextBox Grid.Column="0" Text="{Binding Name, UpdateSourceTrigger=PropertyChanged}" Height="32" VerticalContentAlignment="Center" Margin="0,0,8,0" ToolTip="Tên khách hàng" Tag="Tên khách hàng" Style="{StaticResource WatermarkTextBoxStyle}"/>
-                <TextBox Grid.Column="1" Text="{Binding Phone, UpdateSourceTrigger=PropertyChanged}" Height="32" VerticalContentAlignment="Center" Margin="0,0,8,0" ToolTip="Số điện thoại" Tag="Số điện thoại" Style="{StaticResource WatermarkTextBoxStyle}"/>
-                <TextBox Grid.Column="2" Text="{Binding Email, UpdateSourceTrigger=PropertyChanged}" Height="32" VerticalContentAlignment="Center" Margin="0,0,8,0" ToolTip="Email" Tag="Email" Style="{StaticResource WatermarkTextBoxStyle}"/>
-                <TextBox Grid.Column="3" Text="{Binding Address, UpdateSourceTrigger=PropertyChanged}" Height="32" VerticalContentAlignment="Center" Margin="0,0,8,0" ToolTip="Địa chỉ" Tag="Địa chỉ" Style="{StaticResource WatermarkTextBoxStyle}"/>
-                <TextBox Grid.Column="4" Text="{Binding PointsText, UpdateSourceTrigger=PropertyChanged}" Height="32" TextAlignment="Right" VerticalContentAlignment="Center" ToolTip="Điểm tích lũy" Tag="Điểm tích lũy" Style="{StaticResource WatermarkTextBoxStyle}"/>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+                <Grid Grid.Row="0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="150"/>
+                        <ColumnDefinition Width="190"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="90"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBox Grid.Column="0" Text="{Binding Name, UpdateSourceTrigger=PropertyChanged}" Height="32" VerticalContentAlignment="Center" Margin="0,0,8,0" ToolTip="Tên khách hàng" Tag="Tên khách hàng" Style="{StaticResource WatermarkTextBoxStyle}"/>
+                    <TextBox Grid.Column="1" Text="{Binding Phone, UpdateSourceTrigger=PropertyChanged}" Height="32" VerticalContentAlignment="Center" Margin="0,0,8,0" ToolTip="Số điện thoại" Tag="Số điện thoại" Style="{StaticResource WatermarkTextBoxStyle}"/>
+                    <TextBox Grid.Column="2" Text="{Binding Email, UpdateSourceTrigger=PropertyChanged}" Height="32" VerticalContentAlignment="Center" Margin="0,0,8,0" ToolTip="Email" Tag="Email" Style="{StaticResource WatermarkTextBoxStyle}"/>
+                    <TextBox Grid.Column="3" Text="{Binding Address, UpdateSourceTrigger=PropertyChanged}" Height="32" VerticalContentAlignment="Center" Margin="0,0,8,0" ToolTip="Địa chỉ" Tag="Địa chỉ" Style="{StaticResource WatermarkTextBoxStyle}"/>
+                    <TextBox Grid.Column="4" Text="{Binding PointsText, UpdateSourceTrigger=PropertyChanged}" Height="32" TextAlignment="Right" VerticalContentAlignment="Center" ToolTip="Điểm tích lũy" Tag="Điểm tích lũy" Style="{StaticResource WatermarkTextBoxStyle}"/>
+                </Grid>
+                <Grid Grid.Row="1" Margin="0,8,0,0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="200"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Grid.Column="0" Text="Ngày sinh:" VerticalAlignment="Center" Margin="0,0,10,0" FontWeight="SemiBold"/>
+                    <DatePicker Grid.Column="1" SelectedDate="{Binding BirthDate}" Height="32" VerticalContentAlignment="Center"/>
+                </Grid>
             </Grid>
         </Border>
 

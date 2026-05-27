@@ -5,7 +5,7 @@ namespace quanlybanhang_nmcnpm.Services;
 
 public sealed class OverviewService : IOverviewService
 {
-    private const int LowStockThreshold = 20;
+    private readonly int _lowStockThreshold;
     private readonly ApplicationDbContext _dbContext;
     private readonly IUserSessionService? _sessionService;
 
@@ -13,6 +13,13 @@ public sealed class OverviewService : IOverviewService
     {
         _dbContext = dbContext;
         _sessionService = sessionService;
+        _lowStockThreshold = Get_lowStockThreshold();
+    }
+
+    private static int Get_lowStockThreshold()
+    {
+        var envValue = Environment.GetEnvironmentVariable("QLBH_LOW_STOCK_THRESHOLD");
+        return int.TryParse(envValue, out var threshold) && threshold > 0 ? threshold : 20;
     }
 
     public async Task<OverviewMetrics> GetMetricsAsync(DateTime? from = null, DateTime? to = null)
@@ -36,7 +43,7 @@ public sealed class OverviewService : IOverviewService
         var revenue = await orders.SumAsync(order => (decimal?)order.TongTien) ?? 0m;
         var orderCount = await orders.CountAsync();
         var averageOrderValue = orderCount == 0 ? 0m : decimal.Round(revenue / orderCount, 2);
-        var lowStockCount = await _dbContext.Products.CountAsync(product => product.SoLuongTon <= LowStockThreshold);
+        var lowStockCount = await _dbContext.Products.CountAsync(product => product.SoLuongTon <= _lowStockThreshold);
         var newCustomers = await _dbContext.Customers.CountAsync(customer =>
             customer.NgayDangKy >= start && customer.NgayDangKy < exclusiveEnd);
 
@@ -68,7 +75,7 @@ public sealed class OverviewService : IOverviewService
             .ToList();
 
         var lowStockItems = await _dbContext.Products
-            .Where(product => product.SoLuongTon <= LowStockThreshold)
+            .Where(product => product.SoLuongTon <= _lowStockThreshold)
             .OrderBy(product => product.SoLuongTon)
             .ThenBy(product => product.MaSanPham)
             .Select(product => new LowStockReportItem(

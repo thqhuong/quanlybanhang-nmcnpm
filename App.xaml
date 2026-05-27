@@ -82,5 +82,8 @@
             <Setter Property="BorderThickness" Value="1"/>
             <Setter Property="Padding" Value="6,0,6,0"/>
         </Style>
+
+        <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
+        <helpers:AddOneConverter x:Key="AddOneConverter"/>
     </Application.Resources>
 </Application>

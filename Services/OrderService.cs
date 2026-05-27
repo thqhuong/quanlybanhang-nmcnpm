@@ -28,6 +28,11 @@ public sealed class OrderService : IOrderService
             return ValidationResult<OrderSummary>.Failure(validation.ErrorMessage!);
         }
 
+        return await CreateOrderInternalAsync(input);
+    }
+
+    private async Task<ValidationResult<OrderSummary>> CreateOrderInternalAsync(CreateOrderInput input)
+    {
         var productIds = input.Lines.Select(line => line.ProductId).Distinct().ToList();
         var products = await _dbContext.Products
             .Where(product => productIds.Contains(product.MaHang))
@@ -58,6 +63,10 @@ public sealed class OrderService : IOrderService
         foreach (var line in input.Lines)
         {
             var product = products[line.ProductId];
+            if (product.SoLuongTon < line.Quantity)
+            {
+                return ValidationResult<OrderSummary>.Failure($"Sản phẩm {product.MaSanPham} không đủ tồn kho.");
+            }
             product.SoLuongTon -= line.Quantity;
             order.OrderDetails.Add(new OrderDetail
             {
@@ -70,6 +79,14 @@ public sealed class OrderService : IOrderService
 
         _dbContext.Orders.Add(order);
         await _dbContext.SaveChangesAsync();
+
+        var customer = await _dbContext.Customers.FindAsync(input.CustomerId);
+        if (customer is not null)
+        {
+            var pointsEarned = (int)(total / 10000);
+            customer.DiemTichLuy += pointsEarned;
+            await _dbContext.SaveChangesAsync();
+        }
 
         return ValidationResult<OrderSummary>.Success(new OrderSummary(
             order.MaDonHang,
@@ -164,15 +181,19 @@ public sealed class OrderService : IOrderService
             return ValidationResult.Failure("Mỗi sản phẩm chỉ nên xuất hiện một lần trong đơn hàng.");
         }
 
+        if (input.Lines.Any(line => line.Quantity <= 0))
+        {
+            return ValidationResult.Failure("Số lượng bán phải lớn hơn 0.");
+        }
+
+        var productIds = input.Lines.Select(line => line.ProductId).Distinct().ToList();
+        var products = await _dbContext.Products
+            .Where(p => productIds.Contains(p.MaHang))
+            .ToDictionaryAsync(p => p.MaHang);
+
         foreach (var line in input.Lines)
         {
-            if (line.Quantity <= 0)
-            {
-                return ValidationResult.Failure("Số lượng bán phải lớn hơn 0.");
-            }
-
-            var product = await _dbContext.Products.FirstOrDefaultAsync(p => p.MaHang == line.ProductId);
-            if (product is null)
+            if (!products.TryGetValue(line.ProductId, out var product))
             {
                 return ValidationResult.Failure("Sản phẩm không hợp lệ.");
             }

@@ -50,6 +50,7 @@ public sealed record CustomerListItem(
     string Phone,
     string Email,
     string Address,
+    DateTime? BirthDate,
     int Points,
     DateTime? LastPurchase);
 
@@ -183,6 +184,7 @@ public static class ServiceModelMapping
             customer.SoDienThoai,
             customer.Email,
             customer.DiaChiKH,
+            customer.NgaySinh,
             customer.DiemTichLuy,
             lastPurchase);
     }

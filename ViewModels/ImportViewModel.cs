@@ -19,6 +19,7 @@ public sealed class ImportViewModel : ViewModelBase
     private string _note = "";
     private decimal _total;
     private string _statusMessage = "";
+    private int? _lastReceiptId;
 
     public ImportViewModel(
         IProductService productService,
@@ -33,6 +34,7 @@ public sealed class ImportViewModel : ViewModelBase
         RemoveLineCommand = new RelayCommand(RemoveSelectedLine, () => SelectedLine is not null);
         SaveCommand = new AsyncRelayCommand(SaveAsync, () => Lines.Count > 0);
         NewCommand = new RelayCommand(ClearReceipt);
+        PrintCommand = new RelayCommand(PrintReceipt, () => _lastReceiptId.HasValue);
     }
 
     public ObservableCollection<CategoryOption> Suppliers { get; } = new();
@@ -43,6 +45,7 @@ public sealed class ImportViewModel : ViewModelBase
     public RelayCommand RemoveLineCommand { get; }
     public AsyncRelayCommand SaveCommand { get; }
     public RelayCommand NewCommand { get; }
+    public RelayCommand PrintCommand { get; }
 
     public CategoryOption? SelectedSupplier
     {
@@ -190,7 +193,9 @@ public sealed class ImportViewModel : ViewModelBase
         StatusMessage = result.IsValid ? "Đã lưu phiếu nhập." : result.ErrorMessage ?? "";
         if (result.IsValid)
         {
+            _lastReceiptId = 0;
             ClearReceipt();
+            PrintCommand.RaiseCanExecuteChanged();
             await LoadAsync();
         }
     }
@@ -216,8 +221,15 @@ public sealed class ImportViewModel : ViewModelBase
         UnitCostText = "0";
         DeliveredBy = "";
         Note = "";
+        _lastReceiptId = null;
+        PrintCommand.RaiseCanExecuteChanged();
         RecalculateTotal();
         SaveCommand.RaiseCanExecuteChanged();
+    }
+
+    private void PrintReceipt()
+    {
+        StatusMessage = "Chức năng in phiếu nhập kho đang phát triển.";
     }
 
     private void RecalculateTotal()

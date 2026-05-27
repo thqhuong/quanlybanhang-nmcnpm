@@ -13,6 +13,7 @@ public sealed class CustomersViewModel : ViewModelBase
     private string _email = "";
     private string _address = "";
     private string _pointsText = "0";
+    private DateTime? _birthDate;
     private string _statusMessage = "";
 
     public CustomersViewModel(ICustomerService customerService)
@@ -83,6 +84,12 @@ public sealed class CustomersViewModel : ViewModelBase
     {
         get => _pointsText;
         set => SetProperty(ref _pointsText, value);
+    }
+
+    public DateTime? BirthDate
+    {
+        get => _birthDate;
+        set => SetProperty(ref _birthDate, value);
     }
 
     public string StatusMessage
@@ -168,7 +175,7 @@ public sealed class CustomersViewModel : ViewModelBase
             return null;
         }
 
-        return new CustomerInput(Name, Phone, Email, Address, null, points);
+        return new CustomerInput(Name, Phone, Email, Address, BirthDate, points);
     }
 
     private void FillForm(CustomerListItem? customer)
@@ -182,6 +189,7 @@ public sealed class CustomersViewModel : ViewModelBase
         Phone = customer.Phone;
         Email = customer.Email;
         Address = customer.Address;
+        BirthDate = customer.BirthDate;
         PointsText = customer.Points.ToString();
     }
 
@@ -192,6 +200,7 @@ public sealed class CustomersViewModel : ViewModelBase
         Phone = "";
         Email = "";
         Address = "";
+        BirthDate = null;
         PointsText = "0";
         StatusMessage = "";
     }

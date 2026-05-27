@@ -56,6 +56,31 @@ public sealed class ProductService : IProductService
             .ToListAsync();
     }
 
+    public async Task<ValidationResult<CategoryOption>> CreateCategoryAsync(string name)
+    {
+        if (!CanManageInventory())
+        {
+            return ValidationResult<CategoryOption>.Failure("Bạn không có quyền quản lý kho.");
+        }
+
+        var trimmed = name.Trim();
+        if (string.IsNullOrWhiteSpace(trimmed))
+        {
+            return ValidationResult<CategoryOption>.Failure("Tên nhóm hàng là bắt buộc.");
+        }
+
+        if (await _dbContext.Categories.AnyAsync(c => c.TenNCC == trimmed))
+        {
+            return ValidationResult<CategoryOption>.Failure("Nhóm hàng đã tồn tại.");
+        }
+
+        var category = new Category { TenNCC = trimmed };
+        _dbContext.Categories.Add(category);
+        await _dbContext.SaveChangesAsync();
+
+        return ValidationResult<CategoryOption>.Success(new CategoryOption(category.MaNhaCungCap, category.TenNCC));
+    }
+
     public async Task<ValidationResult<ProductListItem>> CreateAsync(ProductInput input)
     {
         if (!CanManageInventory())
